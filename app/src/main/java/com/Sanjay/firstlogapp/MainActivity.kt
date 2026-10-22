@@ -89,6 +89,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.Sanjay.firstlogapp.ui.theme.FirstLogAppTheme
+import com.Sanjay.firstlogapp.ui.components.M3BottomNavigationBar
+import com.Sanjay.firstlogapp.ui.components.M3DashboardHeader
+import com.Sanjay.firstlogapp.ui.components.M3MetricCard
+import com.Sanjay.firstlogapp.ui.components.M3MetricDetailBottomSheet
+import com.Sanjay.firstlogapp.ui.components.M3TimeframeSegmentedRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -5259,58 +5264,13 @@ fun DashboardScreen(
         ) {
             item(span = { GridItemSpan(2) }) {
                 Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_firstlog_logo),
-                                contentDescription = "FirstLog Logo",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Text("Today's Activity", fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Surface(
-                            onClick = { showAiSummaryDialog = true },
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            shadowElevation = 1.dp
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text("✨", fontSize = 11.sp)
-                                Column(verticalArrangement = Arrangement.Center) {
-                                    Text(
-                                        text = "Daily AI",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        lineHeight = 12.sp
-                                    )
-                                    Text(
-                                        text = "Summary",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        lineHeight = 12.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    M3DashboardHeader(
+                        onAiSummaryClick = { showAiSummaryDialog = true }
+                    )
                     if (!hasCallPermission) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable {
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp).clickable {
                                 permissionLauncher.launch(requiredPermissions)
                             }
                         ) {
@@ -5328,13 +5288,13 @@ fun DashboardScreen(
 
             // Row 1: Screen Time & GPS
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricScreen,
                     onClick = { callInitialTab = 0; selectedMetric = metricScreen }
                 )
             }
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricGps,
                     onClick = { callInitialTab = 0; selectedMetric = metricGps }
                 )
@@ -5342,13 +5302,13 @@ fun DashboardScreen(
 
             // Row 2: Wi-Fi & Mobile Data
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricWifi,
                     onClick = { callInitialTab = 0; selectedMetric = metricWifi }
                 )
             }
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricData,
                     onClick = { callInitialTab = 0; selectedMetric = metricData }
                 )
@@ -5361,7 +5321,7 @@ fun DashboardScreen(
                     sessionCount = bothWifiDataCount,
                     onClick = {
                         selectedMetric = MetricItem(
-                            id = "both_wifi_data",
+                            id = "data",
                             title = "Both Wi-Fi & Mobile Data",
                             duration = bothWifiDataTime,
                             status = "$bothWifiDataCount sessions",
@@ -5376,13 +5336,13 @@ fun DashboardScreen(
 
             // Row 3: Bluetooth & Screen Unlocks
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricBluetooth,
                     onClick = { callInitialTab = 0; selectedMetric = metricBluetooth }
                 )
             }
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricUnlock,
                     onClick = { callInitialTab = 0; selectedMetric = metricUnlock }
                 )
@@ -5390,23 +5350,15 @@ fun DashboardScreen(
 
             // Row 4: Incoming Calls & Outgoing Calls
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricCallIn,
-                    onClick = { callInitialTab = 0; selectedMetric = metricCallIn },
-                    onCallSegmentClick = { tabIdx ->
-                        callInitialTab = tabIdx
-                        selectedMetric = metricCallIn
-                    }
+                    onClick = { callInitialTab = 0; selectedMetric = metricCallIn }
                 )
             }
             item {
-                MetricCard(
+                M3MetricCard(
                     item = metricCallOut,
-                    onClick = { callInitialTab = 0; selectedMetric = metricCallOut },
-                    onCallSegmentClick = { tabIdx ->
-                        callInitialTab = tabIdx
-                        selectedMetric = metricCallOut
-                    }
+                    onClick = { callInitialTab = 0; selectedMetric = metricCallOut }
                 )
             }
 
@@ -5453,25 +5405,12 @@ fun DashboardScreen(
     }
 
     selectedMetric?.let { metric ->
-        when (metric.id) {
-            "call_in", "call_out" -> {
-                CallDetailDialog(
-                    context = context,
-                    isIncoming = metric.id == "call_in",
-                    title = metric.title,
-                    initialTab = callInitialTab
-                ) { selectedMetric = null }
-            }
-            "unlock" -> {
-                UnlockDetailDialog(dataManager) { selectedMetric = null }
-            }
-            "battery" -> {
-                BatteryDetailDialog(dataManager) { selectedMetric = null }
-            }
-            else -> {
-                RadioDetailDialog(metric, dataManager) { selectedMetric = null }
-            }
-        }
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        M3MetricDetailBottomSheet(
+            metric = metric,
+            sheetState = sheetState,
+            onDismiss = { selectedMetric = null }
+        )
     }
 }
 
@@ -6121,15 +6060,11 @@ fun AnalyticsScreen(dataManager: DataManager) {
         }
 
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                filterOptions.forEach { filter ->
-                    ElevatedFilterChip(
-                        selected = selectedFilter == filter,
-                        onClick = { selectedFilter = filter },
-                        label = { Text(filter, fontSize = 12.sp) }
-                    )
-                }
-            }
+            M3TimeframeSegmentedRow(
+                options = filterOptions,
+                selectedOption = selectedFilter,
+                onOptionSelected = { selectedFilter = it }
+            )
         }
 
         if (selectedMetricId == "app_battery") {
@@ -7122,11 +7057,10 @@ fun MainNavigationHost(
     } else {
         Scaffold(
             bottomBar = {
-                NavigationBar {
-                    NavigationBarItem(selected = selectedTab == 0, onClick = { navigateToTab(0) }, icon = { Text("🏠", fontSize = 18.sp) }, label = { Text("Home") })
-                    NavigationBarItem(selected = selectedTab == 1, onClick = { navigateToTab(1) }, icon = { Text("📊", fontSize = 18.sp) }, label = { Text("Analytics") })
-                    NavigationBarItem(selected = selectedTab == 2, onClick = { navigateToTab(2) }, icon = { Text("⚙️", fontSize = 18.sp) }, label = { Text("Settings") })
-                }
+                M3BottomNavigationBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = { navigateToTab(it) }
+                )
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
