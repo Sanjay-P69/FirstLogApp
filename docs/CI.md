@@ -53,7 +53,7 @@ AGP 9 defaults to debug-only unit-test components. The project explicitly sets
 Use `bash gradlew spotlessApply` to format changed Kotlin source files. Spotless
 ratchets from commit `4b699abb1a2271335578a3c736691d6c3b50c073`: untouched existing
 files are grandfathered; touched and new Kotlin source files must satisfy ktlint.
-Keep that baseline in clone history (`fetch-depth: 0` in CI). Build-script formatting
+CI fetches full history and explicitly fetches that baseline if a squash merge makes it absent locally. Build-script formatting
 is not currently enforced. Detekt runs over all Kotlin sources with explicit syntax
 rules in `config/detekt/detekt.yml`; default style/complexity rules remain disabled
 while legacy code is migrated. Android Lint handles Android/API/type correctness.

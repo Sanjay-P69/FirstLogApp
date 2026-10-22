@@ -19,6 +19,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Ensure formatting baseline is available after squash merges
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! git cat-file -e '4b699abb1a2271335578a3c736691d6c3b50c073^{commit}' 2>/dev/null; then
+            git -c 'credential.helper=!f() { printf "%s\n" "username=x-access-token" "password=$GH_TOKEN"; }; f' fetch --no-tags origin 4b699abb1a2271335578a3c736691d6c3b50c073
+          fi
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
