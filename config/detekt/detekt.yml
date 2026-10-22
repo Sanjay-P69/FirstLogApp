@@ -1,0 +1,20 @@
+# Focused, whole-project rules. Android Lint handles Android/API correctness.
+# Default style/complexity rules are deliberately not enabled over legacy adapters.
+config:
+  validation: true
+  warningsAsErrors: true
+potential-bugs:
+  active: true
+  UnreachableCode:
+    active: true
+  DuplicateCaseInWhenExpression:
+    active: true
+  InvalidRange:
+    active: true
+style:
+  active: true
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - 'java.lang.Thread.sleep'
+      - 'java.lang.System.gc'

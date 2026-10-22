@@ -19,8 +19,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val releaseStore = providers.environmentVariable("ANDROID_KEYSTORE_PATH")
+    signingConfigs {
+        if (releaseStore.isPresent) {
+            create("release") {
+                storeFile = file(releaseStore.get())
+                storePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").get()
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseStore.isPresent) signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")

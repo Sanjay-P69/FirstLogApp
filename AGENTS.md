@@ -54,3 +54,10 @@ Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` 
 ## Scope of current enforcement
 
 `scripts/check_architecture.py` enforces data/service → UI separation, pure Content files, theme tokens in Content, and a small activity. It does not prove Kotlin compilation or full clean architecture. Notification/history/report adapters and `DataManager` remain migration targets; do not add new debt to them.
+
+## CI and releases
+
+- Follow `docs/CI.md`. Run `spotlessCheck detekt` plus debug/release builds, both unit-test variants, and both lint variants when changing build configuration. Run connected tests for UI changes.
+- Use `spotlessApply` before committing touched Kotlin sources. Do not advance the formatting baseline to hide failures.
+- Pin Actions to verified commit SHAs and retain least-privilege permissions. Never expose signing secrets to pull-request jobs or use `pull_request_target` to build untrusted code.
+- Keep release keys out of Git and caches. Signed packaging is manual on main; publication and signing-key rotation require explicit authorization.

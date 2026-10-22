@@ -12,51 +12,86 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # Spotless ratchet needs the baseline commit.
+          persist-credentials: false
       - name: Check presentation boundaries
         run: python3 scripts/check_architecture.py
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
         with:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a/setup-gradle # v4
         with:
-          cache-read-only: false
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
       - name: Install project Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
-      - name: Build, unit tests, and lint
-        run: bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --stacktrace
-      - name: Print lint failures
-        if: failure()
-        run: |
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
-          report = Path('app/build/reports/lint-results-debug.xml')
-          if report.exists():
-              for issue in ET.parse(report).getroot().findall('issue'):
-                  if issue.get('severity') in ('Error', 'Fatal'):
-                      print(issue.get('id'), issue.get('message'))
-                      for location in issue.findall('location'):
-                          print(location.attrib)
-          else:
-              import json
-              sarif = Path('app/build/reports/lint-results-debug.sarif')
-              if sarif.exists():
-                  for run in json.loads(sarif.read_text()).get('runs', []):
-                      for result in run.get('results', []):
-                          if result.get('level') == 'error':
-                              print(result.get('ruleId'), result.get('message'), result.get('locations'))
-          PYCODE
-      - uses: actions/upload-artifact@v4
+      - name: Kotlin formatting and static analysis
+        run: bash gradlew spotlessCheck detekt --stacktrace
+      - name: Build debug and release, unit tests, and lint
+        run: >-
+          bash gradlew :app:assembleDebug :app:assembleRelease :app:bundleRelease
+          :app:testDebugUnitTest :app:testReleaseUnitTest
+          :app:lintDebug :app:lintRelease --stacktrace
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
-          name: android-reports
+          name: android-builds-and-reports
+          retention-days: 14
           path: |
             app/build/reports/
+            build/reports/
             app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+
+  device-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [29, 35]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a/setup-gradle # v4
+        with:
+          cache-read-only: true
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run Compose instrumentation tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: default
+          arch: x86_64
+          disable-animations: true
+          script: bash gradlew :app:connectedDebugAndroidTest --stacktrace
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: device-reports-api-${{ matrix.api }}
+          retention-days: 14
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
