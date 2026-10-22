@@ -2,6 +2,8 @@
 
 Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` before changing architecture or UI. User instructions take precedence. Continue routine reversible implementation and verification without asking for repeated approval.
 
+For UI work, also read `docs/UI_REFERENCE_REVIEW.md`. It records the user's ADNS and Essentials references, inspected source revisions/screenshots, and design work that remains unfinished. Do not claim those patterns are implemented merely because they are documented.
+
 ## Dependency direction
 
 - `MainActivity` wires dependencies, starts the Android service, and hosts the app. Never add receivers, telemetry updates, content-provider queries, or polling loops there.
@@ -33,6 +35,10 @@ Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` 
 - Request permissions for the specific user action. Denied access is not zero usage. Recheck after returning from system settings; never mark access granted optimistically.
 - Present recorded values faithfully. Zero means no bar fill. Estimates need an explicit label and method; do not present per-app battery allocation as OS-measured drain. Account selection is not cloud authentication. Background exemptions do not guarantee 24/7 operation.
 - Reuse a component when its interaction, semantics, and visual hierarchy are shared. Do not build a universal component with dozens of behavior flags. Put feature-specific layouts in the feature.
+- Prefer connected rows for related secondary settings/measurements, with one primary observation per screen. Derive first/middle/last geometry from the visible items after filtering. Use native grouping defaults when supported, and keep any shared spacing/shape tokens in the UI design system.
+- Give a switch row one coherent, labelled toggle interaction. A row tap and a switch tap must each dispatch exactly one change; avoid nested handlers that double-toggle. Announce checked, disabled, and expanded states, and preserve at least 48 dp targets. Destructive actions still require the existing confirmations.
+- Verify reference APIs against FirstLog's pinned Material dependency and SDK. Keep opt-ins local. Names such as ExpressiveCard do not make a wrapper native Material 3. Do not copy dependency declarations, assets, blur effects, custom navigation, or large wrapper APIs merely to match a reference screenshot.
+- Keep important metrics visible; use expansion only for secondary density and retain saveable state. Prefer native app-bar scroll behavior and theme motion defaults. Reserve space for any floating control so it cannot cover the last actionable row.
 
 ## Data, privacy, and background operation
 
