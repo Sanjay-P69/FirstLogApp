@@ -69,6 +69,8 @@ object DeviceStateHelper {
                 }
             } catch (_: SecurityException) {
                 // Permission can be revoked between the check and the platform query.
+            } catch (_: Exception) {
+                // Devices without telephony support may reject this query.
             }
         }
 
@@ -78,7 +80,8 @@ object DeviceStateHelper {
                 telephony?.dataState == TelephonyManager.DATA_CONNECTED) {
                 return true
             }
-        } catch (_: SecurityException) {}
+        } catch (_: SecurityException) {
+        } catch (_: Exception) {}
 
         // 3. ConnectivityManager active network with TRANSPORT_CELLULAR & NET_CAPABILITY_INTERNET
         try {
@@ -112,6 +115,8 @@ object DeviceStateHelper {
         return try {
             btAdapter?.isEnabled == true
         } catch (_: SecurityException) {
+            false
+        } catch (_: Exception) {
             false
         }
     }
