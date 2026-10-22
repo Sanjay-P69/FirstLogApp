@@ -17,6 +17,8 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.Sanjay.firstlogapp.R
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,9 +40,9 @@ fun M3BottomNavigationBar(
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
-        M3NavItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
-        M3NavItem("Analytics", Icons.Filled.BarChart, Icons.Outlined.BarChart),
-        M3NavItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+        M3NavItem(stringResource(R.string.today_tab), Icons.Filled.Home, Icons.Outlined.Home),
+        M3NavItem(stringResource(R.string.trends_tab), Icons.Filled.BarChart, Icons.Outlined.BarChart),
+        M3NavItem(stringResource(R.string.settings_tab), Icons.Filled.Settings, Icons.Outlined.Settings)
     )
 
     NavigationBar(
@@ -57,7 +59,7 @@ fun M3BottomNavigationBar(
                 icon = {
                     Icon(
                         imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = item.title
+                        contentDescription = null
                     )
                 },
                 label = {
@@ -75,6 +77,26 @@ fun M3BottomNavigationBar(
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
+        }
+    }
+}
+
+
+/** Expanded-width sibling using the same destinations and selection contract. */
+@Composable
+fun M3NavigationRail(selectedTab: Int, onTabSelected: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val items = listOf(
+        M3NavItem(stringResource(R.string.today_tab), Icons.Filled.Home, Icons.Outlined.Home),
+        M3NavItem(stringResource(R.string.trends_tab), Icons.Filled.BarChart, Icons.Outlined.BarChart),
+        M3NavItem(stringResource(R.string.settings_tab), Icons.Filled.Settings, Icons.Outlined.Settings)
+    )
+    androidx.compose.material3.NavigationRail(modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        items.forEachIndexed { index, item ->
+            androidx.compose.material3.NavigationRailItem(selected = selectedTab == index,
+                onClick = { onTabSelected(index) },
+                icon = { Icon(if (selectedTab == index) item.selectedIcon else item.unselectedIcon, null) },
+                label = { Text(item.title) })
         }
     }
 }

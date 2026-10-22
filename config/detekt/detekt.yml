@@ -1,0 +1,23 @@
+# Focused syntax rules; Android Lint handles Android/API/type correctness.
+# Defaults are not enabled over legacy adapters. No blanket baseline or suppression.
+config:
+  validation: true
+  warningsAsErrors: true
+potential-bugs:
+  active: true
+  InvalidRange:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+exceptions:
+  active: true
+  ReturnFromFinally:
+    active: true
+  ThrowingExceptionFromFinally:
+    active: true
+empty-blocks:
+  active: true
+  EmptyFinallyBlock:
+    active: true
+  EmptyTryBlock:
+    active: true

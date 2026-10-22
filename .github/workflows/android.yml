@@ -1,0 +1,79 @@
+name: Android checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # Spotless ratchet needs the baseline commit.
+          persist-credentials: false
+      - name: Check presentation boundaries
+        run: python3 scripts/check_architecture.py
+      - name: Ensure formatting baseline is available after squash merges
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! git cat-file -e '4b699abb1a2271335578a3c736691d6c3b50c073^{commit}' 2>/dev/null; then
+            git -c 'credential.helper=!f() { printf "%s\n" "username=x-access-token" "password=$GH_TOKEN"; }; f' fetch --no-tags origin 4b699abb1a2271335578a3c736691d6c3b50c073
+          fi
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+      - name: Install project Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Kotlin formatting and static analysis
+        run: bash gradlew spotlessCheck detekt --stacktrace
+      - name: Build debug, unit tests, and lint
+        if: ${{ !cancelled() }}
+        run: >-
+          bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --stacktrace
+      - name: Print lint errors
+        if: failure()
+        run: |
+          python3 - <<'PYCODE'
+          import json
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for report in Path('app/build/reports').glob('lint-results-*.xml'):
+              for issue in ET.parse(report).getroot().findall('issue'):
+                  if issue.get('severity') in ('Error', 'Fatal'):
+                      print(report.name, issue.attrib, [node.attrib for node in issue.findall('location')])
+          for report in Path('app/build/reports').glob('lint-results-*.sarif'):
+              for run in json.loads(report.read_text()).get('runs', []):
+                  for issue in run.get('results', []):
+                      if issue.get('level') == 'error':
+                          print(report.name, issue.get('ruleId'), issue.get('message'), issue.get('locations'))
+          PYCODE
+      - name: Show formatting patch when checks fail
+        if: failure()
+        run: |
+          bash gradlew spotlessApply --stacktrace || true
+          git diff -- app/src
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: android-builds-and-reports
+          retention-days: 14
+          path: |
+            app/build/reports/
+            build/reports/
+            app/build/outputs/apk/debug/*.apk
