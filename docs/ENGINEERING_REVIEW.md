@@ -30,6 +30,8 @@ The foreground-service constraints above were checked against [Android's timeout
 
 CI also exposed an unavailable baseline dependency: the inherited project requests Android platform 37, which the public SDK manager could not install (`Failed to find package platforms;android-37`). The draft now uses public SDK 36 for both compilation and target behavior; the installed application ID and minimum SDK stay unchanged. The original target-37 assumption is recorded above as part of the source review, not as a validated build configuration.
 
+The initial Material 3 `1.5.0-beta02` selection also pulled dependencies requiring compile SDK 37. The draft pins Expressive `1.5.0-alpha13` alongside the inherited February Compose BOM to keep the SDK 36 baseline coherent, with a localized Expressive opt-in. This version choice is deliberate rather than a claim that the newest dependency is always compatible.
+
 ## Reusability findings
 
 - **Good starting points:** existing theme files, native navigation, segmented controls, metric cards, and a modal sheet show an attempt at shared primitives. Retain those concepts.

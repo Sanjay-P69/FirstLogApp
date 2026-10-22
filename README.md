@@ -11,7 +11,7 @@ This branch introduces a Material 3 Expressive redesign of the main destinations
 
 ## Build and check
 
-Use JDK 21, Android SDK platform 36, and the checked-in Gradle wrapper. Keep the project versions in `gradle/libs.versions.toml`; Material 3 is explicitly pinned to `1.5.0-beta02` for Expressive APIs.
+Use JDK 21, Android SDK platform 36, and the checked-in Gradle wrapper. Keep the project versions in `gradle/libs.versions.toml`; Material 3 is explicitly pinned to `1.5.0-alpha13` for Expressive APIs.
 
 ```sh
 python3 scripts/check_architecture.py

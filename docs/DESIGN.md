@@ -12,7 +12,7 @@ Settings groups appearance, tracking, backups, daily summary, and activity manag
 
 ## Native design system
 
-- Use `MaterialExpressiveTheme`, with dynamic light/dark colors on supported devices and the existing brand fallback on older devices. Keep the explicit Material 3 version override in the catalog: `1.5.0-beta02` was verified against Google's release notes dated October 21, 2026. It is a beta dependency and needs build/device validation.
+- Use `MaterialExpressiveTheme`, with dynamic light/dark colors on supported devices and the existing brand fallback on older devices. Keep the explicit Material 3 version override in the catalog: `1.5.0-alpha13` was verified against Google's release notes dated January 28, 2026. This explicit alpha pin keeps Expressive APIs aligned with the SDK 36 / Compose 1.10 baseline; it needs build/device validation.
 - Use Material typography at its standard sizes; the former 18 sp `titleLarge` and reduced body sizes made the whole app unnecessarily dense. Numeric headline styles use tabular figures.
 - Use large Material shapes for grouped cards, tonal surfaces for hierarchy, a primary container for the main metric, and the native navigation indicator. Reserve error color for actionable failures.
 - Use native cards, list items, progress indicators, buttons, filter chips, segmented buttons, sheets, dialogs, and navigation. Avoid gradients, glowing icon frames, custom spring/bounce gestures, and unrelated metric accent colors.
