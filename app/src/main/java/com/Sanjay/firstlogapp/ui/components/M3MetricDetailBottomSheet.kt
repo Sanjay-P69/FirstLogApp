@@ -1,5 +1,8 @@
 package com.Sanjay.firstlogapp.ui.components
 
+import com.Sanjay.firstlogapp.NetworkDataHelper
+import com.Sanjay.firstlogapp.ui.model.MetricItem
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,18 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,12 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.Sanjay.firstlogapp.MetricItem
 import com.Sanjay.firstlogapp.NetworkDataHelper
 import java.util.Locale
 
@@ -88,13 +85,13 @@ fun M3MetricDetailBottomSheet(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(metric.iconTint.copy(alpha = 0.16f)),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = metric.iconResId),
                                 contentDescription = metric.title,
-                                tint = metric.iconTint,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -107,7 +104,7 @@ fun M3MetricDetailBottomSheet(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Today's Telemetry Log",
+                            text = "Today’s activity",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -161,7 +158,7 @@ fun M3MetricDetailBottomSheet(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "View Historical Analytics",
+                        text = "View activity history",
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -428,3 +425,4 @@ private fun DetailStatCard(
         }
     }
 }
+

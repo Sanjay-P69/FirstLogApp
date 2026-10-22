@@ -1,0 +1,80 @@
+package com.Sanjay.firstlogapp.ui.dashboard
+
+import android.Manifest
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import com.Sanjay.firstlogapp.data.local.DataManager
+import com.Sanjay.firstlogapp.ui.components.M3MetricDetailBottomSheet
+import com.Sanjay.firstlogapp.ui.metrics.*
+import com.Sanjay.firstlogapp.ui.model.MetricItem
+import com.Sanjay.firstlogapp.ui.notifications.NotificationDetailDialog
+import com.Sanjay.firstlogapp.ui.summary.AiSummaryDialog
+import kotlinx.coroutines.launch
+
+/** Android integration and legacy detail adapters. DashboardContent stays platform independent. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DashboardRoute(
+    state: DashboardUiState,
+    dataManager: DataManager,
+    onNavigateToAppUsage: () -> Unit,
+    onRefresh: suspend () -> Unit,
+    thumbnailStyle: String
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var selectedMetric by remember { mutableStateOf<MetricItem?>(null) }
+    var detailedMetric by remember { mutableStateOf<MetricItem?>(null) }
+    var showNotifications by remember { mutableStateOf(false) }
+    var showSummary by remember { mutableStateOf(false) }
+    var refreshing by remember { mutableStateOf(false) }
+    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        scope.launch { onRefresh() }
+    }
+    PullToRefreshBox(isRefreshing = refreshing, onRefresh = {
+        scope.launch {
+            refreshing = true
+            try { onRefresh() } finally { refreshing = false }
+        }
+    }) {
+        DashboardContent(state, onAction = { action ->
+            when (action) {
+                is DashboardAction.OpenMetric -> selectedMetric = action.metric
+                DashboardAction.Refresh -> scope.launch { onRefresh() }
+                DashboardAction.OpenSummary -> showSummary = true
+                DashboardAction.OpenApps -> onNavigateToAppUsage()
+                DashboardAction.OpenNotifications -> showNotifications = true
+                DashboardAction.GrantCalls -> permissions.launch(arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_CONTACTS))
+                DashboardAction.GrantBluetooth -> if (Build.VERSION.SDK_INT >= 31) permissions.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
+                DashboardAction.GrantUsage -> context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                DashboardAction.GrantNotifications -> context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            }
+        })
+    }
+    if (showSummary) AiSummaryDialog(dataManager) { showSummary = false }
+    if (showNotifications) NotificationDetailDialog(context, thumbnailStyle) { showNotifications = false }
+    selectedMetric?.let { metric ->
+        M3MetricDetailBottomSheet(metric, rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            onDismiss = { selectedMetric = null }, onNavigateToAnalytics = {
+                detailedMetric = metric
+                selectedMetric = null
+            })
+    }
+    detailedMetric?.let { metric ->
+        val dismiss = { detailedMetric = null }
+        when (metric.id) {
+            "battery" -> BatteryDetailDialog(dataManager, dismiss)
+            "unlock" -> UnlockDetailDialog(dataManager, dismiss)
+            "call_in", "call_out" -> CallDetailDialog(context, metric.id == "call_in", metric.title, onDismiss = dismiss)
+            else -> RadioDetailDialog(metric, dataManager, dismiss)
+        }
+    }
+}

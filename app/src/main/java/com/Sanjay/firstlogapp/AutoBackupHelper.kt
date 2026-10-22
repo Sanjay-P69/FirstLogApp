@@ -1,5 +1,7 @@
 package com.Sanjay.firstlogapp
 
+import com.Sanjay.firstlogapp.data.local.DataManager
+
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -90,7 +92,7 @@ object AutoBackupHelper {
 
             val timeStr = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
             val info = if (hasGoogleDrive) {
-                "Saved for Drive ($googleEmail) on $dateStr at $timeStr"
+                "Saved locally on $dateStr at $timeStr"
             } else {
                 "Saved locally on $dateStr at $timeStr"
             }
@@ -123,7 +125,7 @@ object AutoBackupHelper {
             nm.createNotificationChannel(channel)
         }
 
-        val destText = if (hasGoogleDrive) "Google Drive ($email)" else "Local Device Storage (Documents)"
+        val destText = "local device storage"
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_save)
             .setContentTitle("Sunday 6:00 AM Auto Backup Completed")
@@ -167,3 +169,4 @@ object AutoBackupHelper {
         } catch (_: Exception) {}
     }
 }
+
