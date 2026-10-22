@@ -1,5 +1,8 @@
 package com.Sanjay.firstlogapp
 
+import com.Sanjay.firstlogapp.data.device.DeviceStateHelper
+import com.Sanjay.firstlogapp.data.local.DataManager
+
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
@@ -264,3 +267,4 @@ object BluetoothCategoryHelper {
         checkAllBluetoothConnections(context, dataManager, now)
     }
 }
+

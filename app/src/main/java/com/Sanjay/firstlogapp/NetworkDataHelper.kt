@@ -1,6 +1,7 @@
 package com.Sanjay.firstlogapp
 
-import android.app.usage.NetworkStats
+import com.Sanjay.firstlogapp.data.device.DeviceStateHelper
+
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.net.ConnectivityManager
@@ -107,3 +108,4 @@ object NetworkDataHelper {
     fun getTodayMobileDataBytes(context: Context, startTime: Long, endTime: Long = System.currentTimeMillis()): Long =
         getNetworkBytes(context, isWifi = false, startTime = startTime, endTime = endTime)
 }
+

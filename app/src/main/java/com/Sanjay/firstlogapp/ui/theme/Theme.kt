@@ -4,6 +4,8 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -20,36 +22,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// =====================================================================
-// Custom Semantic Palette for Utility Tracking
-// =====================================================================
-@Immutable
-data class SemanticColors(
-    val success: Color = MintSage,
-    val onSuccess: Color = Color.White,
-    val successContainer: Color = MintSageContainerDark,
-    val alert: Color = WarmCoral,
-    val onAlert: Color = Color.White,
-    val alertContainer: Color = WarmCoralContainerDark,
-    val neutralMuted: Color = MutedSlate,
-    val primaryAccent: Color = SoftIndigoPrimaryDark,
-    val skyAccent: Color = SkyBlueAccent,
-    val amberAccent: Color = AmberGoldAccent
-)
-
-val LocalSemanticColors = staticCompositionLocalOf { SemanticColors() }
-
-val MaterialTheme.semanticColors: SemanticColors
-    @Composable
-    @ReadOnlyComposable
-    get() = LocalSemanticColors.current
-
-// =====================================================================
-// M3 Dark Color Scheme (Tonal surfaces, no harsh pure #000000)
-// =====================================================================
 private val DarkColorScheme = darkColorScheme(
     primary = SoftIndigoPrimaryDark,
-    onPrimary = Color.White,
+    onPrimary = Color(0xFF222653),
     primaryContainer = SoftIndigoContainerDark,
     onPrimaryContainer = SoftIndigoOnContainerDark,
 
@@ -127,10 +102,11 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = WarmCoralOnContainerLight
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FirstLogAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -140,34 +116,6 @@ fun FirstLogAppTheme(
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
-    }
-
-    val semanticColors = if (darkTheme) {
-        SemanticColors(
-            success = MintSage,
-            onSuccess = Color.White,
-            successContainer = MintSageContainerDark,
-            alert = WarmCoral,
-            onAlert = Color.White,
-            alertContainer = WarmCoralContainerDark,
-            neutralMuted = MutedSlate,
-            primaryAccent = SoftIndigoPrimaryDark,
-            skyAccent = SkyBlueAccent,
-            amberAccent = AmberGoldAccent
-        )
-    } else {
-        SemanticColors(
-            success = MintSageLight,
-            onSuccess = Color.White,
-            successContainer = MintSageContainerLight,
-            alert = WarmCoralLight,
-            onAlert = Color.White,
-            alertContainer = WarmCoralContainerLight,
-            neutralMuted = MutedSlateLight,
-            primaryAccent = SoftIndigoPrimaryLight,
-            skyAccent = Color(0xFF006782),
-            amberAccent = Color(0xFFE65100)
-        )
     }
 
     val view = LocalView.current
@@ -185,11 +133,9 @@ fun FirstLogAppTheme(
         }
     }
 
-    CompositionLocalProvider(LocalSemanticColors provides semanticColors) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
-    }
+    MaterialExpressiveTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 }
