@@ -2,6 +2,9 @@ package com.Sanjay.firstlogapp.data.device
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import android.content.Context
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -58,20 +61,24 @@ object DeviceStateHelper {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
 
         // 1. Primary check: TelephonyManager.isDataEnabled
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
             try {
                 telephony?.let {
                     return it.isDataEnabled
                 }
-            } catch (_: Exception) {}
+            } catch (_: SecurityException) {
+                // Permission can be revoked between the check and the platform query.
+            }
         }
 
         // 2. TelephonyManager dataState check (DATA_CONNECTED = 2)
         try {
-            if (telephony?.dataState == TelephonyManager.DATA_CONNECTED) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED &&
+                telephony?.dataState == TelephonyManager.DATA_CONNECTED) {
                 return true
             }
-        } catch (_: Exception) {}
+        } catch (_: SecurityException) {}
 
         // 3. ConnectivityManager active network with TRANSPORT_CELLULAR & NET_CAPABILITY_INTERNET
         try {
@@ -92,6 +99,10 @@ object DeviceStateHelper {
     }
 
     fun isBluetoothEnabled(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            return false
+        }
         val btAdapter = try {
             (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
                 ?: BluetoothAdapter.getDefaultAdapter()
@@ -100,7 +111,7 @@ object DeviceStateHelper {
         }
         return try {
             btAdapter?.isEnabled == true
-        } catch (_: Exception) {
+        } catch (_: SecurityException) {
             false
         }
     }
