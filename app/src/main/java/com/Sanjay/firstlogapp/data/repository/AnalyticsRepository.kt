@@ -37,12 +37,19 @@ class StoredAnalyticsRepository(
         val prefs = storage.getPrefs().all
         val prefix = "hourly_${metricId}_"
         val hourly = prefs.filterKeys { it.startsWith(prefix) }
-            .mapKeys { it.key.removePrefix(prefix) }.mapValues { (it.value as Number).toLong() }
+            .mapKeys {
+                normalizedDateKey(it.key.removePrefix(prefix))
+            }.mapValues { (it.value as Number).toLong() }
         val history = JSONArray(prefs["history_records_json"] as? String ?: "[]")
         val daily = buildMap {
             for (index in 0 until history.length()) {
                 val record = history.getJSONObject(index)
-                if (record.has(metricId)) put(record.getString("date"), record.getLong(metricId))
+                if (record.has(
+                        metricId
+                    )
+                ) {
+                    put(normalizedDateKey(record.getString("date")), record.getLong(metricId))
+                }
             }
         }.toMutableMap()
         val start = (prefs["last_on_time_$metricId"] as? Long)?.takeIf {
@@ -50,7 +57,7 @@ class StoredAnalyticsRepository(
         }
         val cycle = prefs["current_cycle_date"] as? String
         if (cycle != null) {
-            daily[cycle] = (prefs["today_$metricId"] as? Long ?: 0L) +
+            daily[normalizedDateKey(cycle)] = (prefs["today_$metricId"] as? Long ?: 0L) +
                 if (start != null) (now - start) else 0L
         }
         return AnalyticsSeries(

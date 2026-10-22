@@ -44,7 +44,7 @@ The initial Material 3 `1.5.0-beta02` selection also pulled dependencies requiri
 - **Duplicate presentation:** the old screen has both `MetricCard` and `M3MetricCard`, special battery/app/network home cards, and multiple trend renderers. Their color, spacing, hierarchy, and interaction differ. Replaced dashboard cards with one native metric hierarchy and removed unused variants.
 - **Wrong model boundary:** `MetricItem` originally lives in the activity, includes colors, and carries unrelated optional fields for different metric types. Moved it to `ui/model` and removed its color field. It remains a compatibility model; the next evolution is typed detail state, not more optional payload fields.
 - **Long parameter lists:** root navigation and dashboard receive dozens of parallel strings/counters. Replaced root/dashboard parameters with `DashboardUiState` and typed actions.
-- **Business logic inside UI:** app battery allocation, provider queries, and formatting are embedded in screens. The new dashboard mapper and repository separate measurement from presentation; the remaining notification/history/report adapters need the same migration.
+- **Business logic inside UI:** app battery allocation, provider queries, and formatting are embedded in screens. The new dashboard mapper and repository separate measurement from presentation; the remaining notification/report adapters need the same migration.
 - **Avoid premature frameworks:** no benefit is demonstrated for dozens of Gradle modules, generic base screens, universal configurable cards, or one use-case wrapper per getter. Keep a small explicit dependency graph and extract shared behavior only when its semantics match.
 
 ## UI and UX findings
@@ -62,9 +62,9 @@ The initial Material 3 `1.5.0-beta02` selection also pulled dependencies requiri
 
 ## Implementation status and acceptance
 
-Implemented: feature/package extraction; small activity; dashboard repository and lifecycle-aware ViewModel; pure Today/Trends/Settings/app-list renderers; native Material 3 Expressive theme; restored metric-history entry points; honest backup/summary/background copy; agent guidelines and dependency guard.
+Implemented: feature/package extraction; small activity; dashboard repository and lifecycle-aware ViewModel; pure Today/Trends/Settings/app-list renderers; native Material 3 Expressive theme; native metric overview sheets and full-screen history pages; compact full-range duration charts, recent battery lines, and retained-session histograms; typed millisecond buckets with explicit missing/future states; honest backup/summary/background copy; agent guidelines and dependency guard.
 
-Still open: transactional persistence and backup migration; foreground service redesign; legacy notification/history/report UI migration; full localization of mapper/legacy strings; credential migration; performance profiling and device verification.
+Still open: transactional persistence and backup migration; foreground service redesign; legacy notification/report UI migration; full localization of mapper/legacy strings; credential migration; performance profiling and device verification.
 
 Verified locally: architecture dependency guard, XML/TOML parsing, and diff whitespace checks. Local Gradle startup failed with `java.net.SocketException: Operation not permitted`, so Android validation moved to GitHub Actions. [CI run 8](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870) passed debug APK assembly, unit tests, lint, and the architecture guard against app-source commit `613dbc78ae0f467b2f1a97b4df388ac140b82602`. Existing lint warnings remain; errors were fixed without a baseline. [APK and reports](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870/artifacts/12422037722) are available for review.
 
@@ -77,5 +77,5 @@ Rendered previews and physical-device behavior remain **unverified**. The PR rem
 1. Keep build/unit/lint checks green; render previews and test real permission/lifecycle paths.
 2. Stabilize one transaction owner, cycle calculations, session accounting, and versioned backup round trips with tests.
 3. Rework background monitoring to respect the selected OS APIs and service type limits.
-4. Migrate remaining notification/history/report adapters to their own repository/state contracts.
+4. Migrate remaining notification/report adapters to their own repository/state contracts.
 5. Add storage-driven updates, constrained queries, accessibility/device checks, and only then polish motion or advanced adaptive navigation.

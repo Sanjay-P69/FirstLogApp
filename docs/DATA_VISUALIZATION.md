@@ -55,8 +55,7 @@ and [analytics contract](../app/src/main/java/com/Sanjay/firstlogapp/data/reposi
 
 ## Typed boundary before chart rendering
 
-Replace `List<Pair<String, Float>>` / label-only `TrendPoint` with a typed analytics
-result at the repository boundary. This is a target contract, not a shipped change:
+The chart path now replaces `List<Pair<String, Float>>` / label-only `TrendPoint` with timestamped analytics buckets, raw millisecond values, and quality states. The full target contract below also requires coverage and provenance work that legacy preferences cannot yet provide:
 
 - Identify the metric, physical unit, aggregation (sum/count/sample), query interval,
   timezone/cycle definition, and provenance.

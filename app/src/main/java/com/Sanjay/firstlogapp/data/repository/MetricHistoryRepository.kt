@@ -28,28 +28,47 @@ class StoredMetricHistoryRepository(
                 .sortedBy { it.timestamp }
             val live = if (storage.isCharging() && storage.getLastChargeStartTime() > 0) {
                 (now - storage.getLastChargeStartTime()).coerceAtLeast(0)
-            } else 0L
-            MetricHistory.Battery(storage.getCurrentBatteryLevel(), storage.getBatteryStartLevel(),
-                storage.getTodayBatteryUsed(), storage.getTodayChargingTime() + live,
-                storage.getScreenOnDrainRate(), samples, storage.getTodayChargingSessions(),
-                storage.getStackedBatteryHistoryByMonth())
+            } else {
+                0L
+            }
+            MetricHistory.Battery(
+                storage.getCurrentBatteryLevel(),
+                storage.getBatteryStartLevel(),
+                storage.getTodayBatteryUsed(),
+                storage.getTodayChargingTime() + live,
+                storage.getScreenOnDrainRate(),
+                samples,
+                storage.getTodayChargingSessions(),
+                storage.getStackedBatteryHistoryByMonth()
+            )
         }
         "unlock" -> MetricHistory.Unlock(
             storage.getTodayUnlockCount(), storage.getTodayActualUsageCount(),
             storage.getTodayActualUsageDuration(), storage.getTodayQuickGlanceCount(),
             storage.getTodayQuickGlanceDuration(), storage.getTodayLockScreenPeekCount(),
             storage.getTodayUnlockFingerprint(), storage.getTodayUnlockFace(),
-            storage.getTodayUnlockPin(), storage.getTodayUnlockSessions())
+            storage.getTodayUnlockPin(), storage.getTodayUnlockSessions()
+        )
         "call_in", "call_out" -> {
             val now = System.currentTimeMillis()
             val records = calls.read(storage.getCycleStartTimestamp(now), now).filter {
-                if (metricId == "call_in") it.type in setOf(CallLog.Calls.INCOMING_TYPE,
-                    CallLog.Calls.MISSED_TYPE, CallLog.Calls.REJECTED_TYPE)
-                else it.type == CallLog.Calls.OUTGOING_TYPE
+                if (metricId == "call_in") {
+                    it.type in setOf(
+                        CallLog.Calls.INCOMING_TYPE,
+                        CallLog.Calls.MISSED_TYPE,
+                        CallLog.Calls.REJECTED_TYPE
+                    )
+                } else {
+                    it.type == CallLog.Calls.OUTGOING_TYPE
+                }
             }
             MetricHistory.Calls(records)
         }
-        else -> MetricHistory.Radio(storage.getStackedHistoryByMonth(metricId).values.flatten()
-            .map { MetricDayRecord(it.first.take(10), it.second) }.sortedByDescending { it.date })
+        else -> MetricHistory.Radio(
+            storage.getStackedHistoryByMonth(metricId).values.flatten()
+                .map {
+                    MetricDayRecord(it.first.take(10), it.second)
+                }.sortedByDescending { it.date }
+        )
     }
 }

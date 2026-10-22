@@ -90,4 +90,10 @@ class TimeBucketAggregationTest {
         assertEquals(25, result.size)
         assertTrue(result.all { it.durationMillis == null })
     }
+
+    @Test
+    fun legacyLocalizedDigitsKeepTheirDateAndHourIdentity() {
+        assertEquals("2026-10-22_8", normalizedDateKey("٢٠٢٦-١٠-٢٢_8"))
+        assertEquals("2026-10-22_8", normalizedDateKey("2026-10-22_8"))
+    }
 }

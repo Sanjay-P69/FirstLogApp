@@ -52,18 +52,33 @@ fun MetricHistoryContent(
     Scaffold(modifier, topBar = {
         TopAppBar(title = { Text(state.title) }, navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.navigate_back))
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.navigate_back)
+                )
             }
         })
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        LazyColumn(
+            Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             if (state.isLoading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-            if (state.hasError || state.accessDenied) item {
-                Text(stringResource(if (state.accessDenied) R.string.chart_calls_denied
-                    else R.string.activity_load_error), color = MaterialTheme.colorScheme.error)
-                TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+            if (state.hasError || state.accessDenied) {
+                item {
+                    Text(
+                        stringResource(
+                            if (state.accessDenied) {
+                                R.string.chart_calls_denied
+                            } else {
+                                R.string.activity_load_error
+                            }
+                        ),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+                }
             }
             state.analytics?.let { analytics -> item { AnalyticsChartCard(analytics) } }
             state.plot?.let { plot -> item { HistoryPlotCard(plot) } }
@@ -74,8 +89,10 @@ fun MetricHistoryContent(
                     }
                 }
                 if (!section.expandable || expanded == section.title) {
-                    items(section.rows.withIndex().toList(),
-                        key = { "row-$sectionIndex-${it.index}" }) { (_, row) ->
+                    items(
+                        section.rows.withIndex().toList(),
+                        key = { "row-$sectionIndex-${it.index}" }
+                    ) { (_, row) ->
                         HistoryValueRow(row, onDial)
                     }
                 }
@@ -91,12 +108,17 @@ private fun HistoryHeading(section: HistorySection, open: Boolean, onToggle: () 
         return
     }
     val status = stringResource(if (open) R.string.expanded else R.string.collapsed)
-    Card(onClick = onToggle, modifier = Modifier.fillMaxWidth().semantics {
-        stateDescription = status
-    }) {
+    Card(
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth().semantics {
+            stateDescription = status
+        }
+    ) {
         ListItem(headlineContent = { Text(section.title) }, trailingContent = {
-            Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                contentDescription = null)
+            Icon(
+                if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                contentDescription = null
+            )
         })
     }
 }
@@ -111,8 +133,10 @@ private fun HistoryValueRow(row: HistoryRow, onDial: (String) -> Unit) {
     }, trailingContent = {
         row.dialNumber?.let { number ->
             IconButton(onClick = { onDial(number) }) {
-                Icon(Icons.Outlined.Call,
-                    contentDescription = stringResource(R.string.dial_number))
+                Icon(
+                    Icons.Outlined.Call,
+                    contentDescription = stringResource(R.string.dial_number)
+                )
             }
         }
     })
@@ -124,8 +148,12 @@ private fun HistoryPlotCard(plot: HistoryPlot) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(plot.title, style = MaterialTheme.typography.titleMedium)
             CompactChart(plot.points, plot.title, axisValue = { value ->
-                String.format(Locale.getDefault(), if (plot.isPercentage) "%.0f%%" else "%.0f", value)
-            }, style = plot.style, fixedMaximum = plot.maximum)
+                String.format(
+                    Locale.getDefault(),
+                    if (plot.isPercentage) "%.0f%%" else "%.0f",
+                    value
+                )
+            }, style = plot.style, fixedMaximum = plot.maximum, axisLabels = plot.axisLabels)
         }
     }
 }

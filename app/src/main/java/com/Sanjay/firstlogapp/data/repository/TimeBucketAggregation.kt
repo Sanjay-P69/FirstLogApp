@@ -106,3 +106,9 @@ internal fun callBuckets(
         )
     }
 }
+
+/** Legacy preference dates were formatted in the device locale; read without rewriting keys. */
+internal fun normalizedDateKey(value: String): String = value.map { character ->
+    val digit = Character.digit(character, 10)
+    if (digit >= 0) ('0'.code + digit).toChar() else character
+}.joinToString("")

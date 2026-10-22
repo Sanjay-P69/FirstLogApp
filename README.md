@@ -9,6 +9,8 @@ This branch introduces a Material 3 Expressive redesign of the main destinations
 - [UX, design rules, and open-source references](docs/DESIGN.md)
 - [Contributor and agent standards](AGENTS.md)
 - [CI checks, artifacts, and signed release setup](docs/CI.md)
+- [Chart data, semantics, and accessibility](docs/DATA_VISUALIZATION.md)
+- [Future SQLite and conversational analytics architecture](docs/AGENT_ANALYTICS_ARCHITECTURE.md)
 
 ## Build and check
 
@@ -27,11 +29,11 @@ With a compatible emulator or device:
 bash gradlew :app:connectedDebugAndroidTest
 ```
 
-Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. CI checks formatting, static analysis, the debug build, unit tests, and lint. A separate Release APK workflow builds on merges/pushes to main and manual dispatch; it signs when release secrets are configured and otherwise labels the APK unsigned. Emulator tests are not run in CI. See [release setup and downloads](docs/CI.md).
+Open `DashboardPreviews.kt`, `AnalyticsPreviews.kt`, and `MetricHistoryPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. CI checks formatting, static analysis, the debug build, unit tests, and lint. A separate Release APK workflow builds on merges/pushes to main and manual dispatch; it signs when release secrets are configured and otherwise labels the APK unsigned. Emulator tests are not run in CI. See [release setup and downloads](docs/CI.md).
 
 ## Boundaries
 
-`MainActivity` wires the application. `LoggingService` monitors device state. `data/` owns platform reads and the legacy preference adapter. A dashboard repository and ViewModel expose immutable state to rendering-only Content composables. Routes own Android launchers and legacy detail adapters. Some detailed notification/history/report screens still require migration; read the architecture document before extending them.
+`MainActivity` wires the application. `LoggingService` monitors device state. `data/` owns platform reads and the legacy preference adapter. A dashboard repository and ViewModel expose immutable state to rendering-only Content composables. Routes own Android launchers and legacy detail adapters. Metric histories use full-screen routes and repositories; notification/report screens still require migration; read the architecture document before extending them.
 
 ## Data limitations
 

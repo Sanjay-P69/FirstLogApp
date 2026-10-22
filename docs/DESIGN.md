@@ -25,7 +25,7 @@ Settings groups appearance, tracking, backups, daily summary, and activity manag
 - A denied permission has a specific enable action, not a fake zero count. Calls, Bluetooth, app usage access, and notification access have independent states.
 - Loading and first-load failure have their own UI. A refresh failure preserves the last snapshot and marks it stale. Every visible control emits an action.
 - Root selection and app-list navigation survive activity recreation. Back from a secondary destination returns to Today; back from the app list returns to Today.
-- A metric sheet has a working history action. Existing histories, notification replies, and report exports are retained through legacy routes while those screens migrate.
+- A metric sheet opens a full-screen history page with native components, compact plots, and expandable recorded details. Notification replies and report exports remain available through legacy routes while those screens migrate.
 - Read current permission state after returning from settings. Do not optimistically claim a grant.
 
 ## References and what to borrow

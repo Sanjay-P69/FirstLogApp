@@ -42,7 +42,8 @@ fun CompactChart(
     axisValue: (Double) -> String,
     modifier: Modifier = Modifier,
     style: ChartStyle = ChartStyle.BARS,
-    fixedMaximum: Double? = null
+    fixedMaximum: Double? = null,
+    axisLabels: List<ChartAxisLabel> = emptyList()
 ) {
     if (points.isEmpty()) return
     var selected by remember(points) {
@@ -146,14 +147,22 @@ fun CompactChart(
                     }
                 }
                 BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 28.dp)) {
-                    tickIndices(points.size).forEach { tick ->
-                        val fraction = points[tick].position ?: ((tick + 0.5f) / points.size)
+                    val labels = axisLabels.ifEmpty {
+                        tickIndices(points.size).map { tick ->
+                            ChartAxisLabel(
+                                points[tick].label,
+                                points[tick].position ?: ((tick + 0.5f) / points.size)
+                            )
+                        }
+                    }
+                    labels.forEach { tick ->
+                        val fraction = tick.position
                         val x = (maxWidth * fraction - 22.dp).coerceIn(
                             0.dp,
                             (maxWidth - 44.dp).coerceAtLeast(0.dp)
                         )
                         Text(
-                            points[tick].label,
+                            tick.label,
                             Modifier.offset(x = x).width(44.dp),
                             style = MaterialTheme.typography.labelSmall,
                             textAlign = TextAlign.Center

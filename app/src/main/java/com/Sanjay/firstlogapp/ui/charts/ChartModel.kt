@@ -8,6 +8,8 @@ import kotlin.math.pow
 enum class ChartPointState { RECORDED, PARTIAL, NO_RECORD, FUTURE }
 enum class ChartStyle { BARS, LINE }
 
+data class ChartAxisLabel(val label: String, val position: Float)
+
 data class ChartPoint(
     val label: String,
     val description: String,
