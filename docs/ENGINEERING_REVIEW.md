@@ -32,6 +32,12 @@ CI also exposed an unavailable baseline dependency: the inherited project reques
 
 The initial Material 3 `1.5.0-beta02` selection also pulled dependencies requiring compile SDK 37. The draft pins Expressive `1.5.0-alpha13` alongside the inherited February Compose BOM to keep the SDK 36 baseline coherent, with a localized Expressive opt-in. This version choice is deliberate rather than a claim that the newest dependency is always compatible.
 
+## Additional measurement findings
+
+- `LoggingService` classifies fingerprint/face/PIN purely by elapsed time from screen-on (≤500 ms, 501–1800 ms, otherwise PIN). These are timing heuristics, not verified authentication methods. Unlock details now disclose that limitation; existing records and heuristics are preserved. The sheet also used 5-second session copy while the service uses a 10-second quick-glance threshold; the UI now matches the service.
+- `NetworkDataHelper` falls back to `TrafficStats` cumulative counters if usage-access queries fail. Those counters may cover time since boot rather than the selected cycle. Raw byte totals in retained detail adapters must not be treated as verified daily totals until provenance and baseline subtraction are modeled.
+- CI reached successful Kotlin compilation, debug APK assembly, and unit-test execution. Lint exposed a missing permission guard, receiver-registration flags, and settings resource lookups. Fixes are in the draft; the latest check status is on the PR. Runtime, rendered previews, and connected UI tests remain unverified.
+
 ## Reusability findings
 
 - **Good starting points:** existing theme files, native navigation, segmented controls, metric cards, and a modal sheet show an attempt at shared primitives. Retain those concepts.

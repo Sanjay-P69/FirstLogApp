@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.Sanjay.firstlogapp.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.util.Locale
@@ -269,21 +271,23 @@ private fun UnlockDetailBreakdown(metric: MetricItem) {
             DetailStatCard(
                 label = "Active Usages",
                 value = "${metric.actualUsageCount}",
-                subtext = "> 5 seconds",
+                subtext = stringResource(R.string.active_session_threshold),
                 modifier = Modifier.weight(1f)
             )
             DetailStatCard(
                 label = "Quick Glances",
                 value = "${metric.quickGlanceCount}",
-                subtext = "< 5 seconds",
+                subtext = stringResource(R.string.quick_glance_threshold),
                 modifier = Modifier.weight(1f)
             )
         }
         DetailRowCard(
-            label = "Biometric & PIN Breakdown",
-            value = "👆 ${metric.unlockFingerprint} Fingerprint  •  😃 ${metric.unlockFace} Face  •  🔢 ${metric.unlockPin} PIN",
+            label = stringResource(R.string.estimated_unlock_methods),
+            value = stringResource(R.string.unlock_method_counts, metric.unlockFingerprint, metric.unlockFace, metric.unlockPin),
             highlight = false
         )
+        Text(stringResource(R.string.unlock_estimate_hint), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

@@ -35,6 +35,8 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
+    val successMessage = stringResource(R.string.operation_success)
+    val failureMessage = stringResource(R.string.operation_failed)
     var state by remember { mutableStateOf(SettingsUiState(busy = true)) }
     var confirmReset by remember { mutableStateOf(false) }
     var confirmRestore by remember { mutableStateOf<SettingsAction?>(null) }
@@ -55,11 +57,11 @@ fun SettingsScreen(
                 val ok = withContext(Dispatchers.IO) { operation() }
                 reload()
                 if (ok) after()
-                snackbar.showSnackbar(context.getString(if (ok) R.string.operation_success else R.string.operation_failed))
+                snackbar.showSnackbar(if (ok) successMessage else failureMessage)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                snackbar.showSnackbar(context.getString(R.string.operation_failed))
+                snackbar.showSnackbar(failureMessage)
             } finally { state = state.copy(busy = false) }
         }
     }

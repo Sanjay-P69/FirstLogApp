@@ -63,7 +63,7 @@ fun AnalyticsContent(
                 }
             }
             if (state.points.none { it.hours > 0f }) item { Text(stringResource(R.string.no_trend_data), style = MaterialTheme.typography.bodyLarge) }
-            items(state.points.withIndex().toList(), key = { "${it.index}-${it.value.label}" }) { (_, point) ->
+            items((if (state.points.any { it.hours > 0f }) state.points else emptyList()).withIndex().toList(), key = { "${it.index}-${it.value.label}" }) { (_, point) ->
                 ListItem(
                     headlineContent = { Text(point.label) },
                     supportingContent = {

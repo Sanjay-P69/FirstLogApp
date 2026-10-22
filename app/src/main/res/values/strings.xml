@@ -80,4 +80,11 @@
     <string name="loading_activity">Loading your activity…</string>
     <string name="activity_load_error">Could not load your activity.</string>
     <string name="retry">Retry</string>
+    <string name="access_needed">Access needed</string>
+    <string name="bluetooth_access_hint">Allow Bluetooth access to see device activity.</string>
+    <string name="active_session_threshold">10 seconds or longer</string>
+    <string name="quick_glance_threshold">Under 10 seconds</string>
+    <string name="estimated_unlock_methods">Estimated unlock methods</string>
+    <string name="unlock_method_counts">Fingerprint %1$d · Face %2$d · PIN %3$d</string>
+    <string name="unlock_estimate_hint">Unlock methods are estimated from screen-on timing. They are not verified authentication records.</string>
 </resources>

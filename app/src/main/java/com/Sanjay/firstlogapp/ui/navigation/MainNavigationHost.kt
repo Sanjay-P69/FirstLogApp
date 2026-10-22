@@ -41,7 +41,7 @@ fun MainNavigationHost(
             Scaffold(bottomBar = {
                 if (!expanded) M3BottomNavigationBar(selectedTab, { selectedTab = it })
             }) { padding ->
-                Row(Modifier.padding(padding)) {
+                Row(Modifier.padding(padding).consumeWindowInsets(padding)) {
                     if (expanded) M3NavigationRail(selectedTab, { selectedTab = it })
                     Box(Modifier.weight(1f)) {
                         when (selectedTab) {

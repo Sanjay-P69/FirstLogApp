@@ -80,7 +80,7 @@ fun DashboardContent(
         item(key = "activity_heading", span = { GridItemSpan(maxLineSpan) }) { SectionHeading(R.string.activity_heading) }
         item(key = "apps", span = { GridItemSpan(maxLineSpan) }) {
             Card(shape = MaterialTheme.shapes.extraLarge) {
-                ActionRow(stringResource(R.string.app_usage), state.appUsage) {
+                ActionRow(stringResource(R.string.app_usage), if (state.canReadApps) state.appUsage else stringResource(R.string.usage_access_hint)) {
                     onAction(if (state.canReadApps) DashboardAction.OpenApps else DashboardAction.GrantUsage)
                 }
                 if (state.canReadApps) {
@@ -97,7 +97,10 @@ fun DashboardContent(
         item(key = "unlocks") { M3MetricCard(state.unlocks, { onAction(DashboardAction.OpenMetric(state.unlocks)) }) }
         item(key = "connections_heading", span = { GridItemSpan(maxLineSpan) }) { SectionHeading(R.string.connections_heading) }
         items(state.connections, key = { it.id }) { metric ->
-            M3MetricCard(metric, {
+            val displayMetric = if (metric.id == "bluetooth" && !state.canReadBluetooth) {
+                metric.copy(duration = stringResource(R.string.access_needed), status = stringResource(R.string.bluetooth_access_hint))
+            } else metric
+            M3MetricCard(displayMetric, {
                 onAction(if (metric.id == "bluetooth" && !state.canReadBluetooth) DashboardAction.GrantBluetooth
                     else DashboardAction.OpenMetric(metric))
             })

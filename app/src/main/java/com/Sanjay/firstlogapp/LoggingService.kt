@@ -29,6 +29,7 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -264,18 +265,11 @@ class LoggingService : Service() {
             addAction("android.intent.action.ANY_DATA_CONNECTION_STATE_CHANGED")
         }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(backgroundReceiver, filter, Context.RECEIVER_EXPORTED)
-            } else {
-                registerReceiver(backgroundReceiver, filter)
-            }
+            // Bluetooth broadcasts can originate in a privileged process outside the system UID.
+            ContextCompat.registerReceiver(this, backgroundReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
         } catch (_: Exception) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    registerReceiver(backgroundReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-                } else {
-                    registerReceiver(backgroundReceiver, filter)
-                }
+                ContextCompat.registerReceiver(this, backgroundReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
             } catch (_: Exception) {}
         }
     }
