@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
-    id("com.diffplug.spotless") version "8.0.0"
+    id("com.diffplug.spotless") version "8.10.4"
 }
 
 // Compare trees directly: Spotless's merge-base ratchet broadens unexpectedly after
