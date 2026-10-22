@@ -27,7 +27,7 @@ With a compatible emulator or device:
 bash gradlew :app:connectedDebugAndroidTest
 ```
 
-Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. The expanded GitHub workflow checks formatting, static analysis, debug/release builds, unit tests, and lint, plus connected UI tests on API 29 and 35 emulators. Normal CI release artifacts are unsigned. Manual signed packaging requires the environment secrets documented in [CI setup](docs/CI.md).
+Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. CI checks formatting, static analysis, the debug build, unit tests, and lint. A separate Release APK workflow builds on merges/pushes to main and manual dispatch; it signs when release secrets are configured and otherwise labels the APK unsigned. Emulator tests are not run in CI. See [release setup and downloads](docs/CI.md).
 
 ## Boundaries
 

@@ -25,7 +25,9 @@ class DashboardContentTest {
             }
         }
         // Lazy grid items are composed on demand; find the action by scrolling the grid.
-        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Enable call tracking"))
+        compose.onNode(
+            hasScrollToIndexAction()
+        ).performScrollToNode(hasText("Enable call tracking"))
         compose.onNodeWithText("Enable call tracking").performClick()
         compose.runOnIdle { assertEquals(DashboardAction.GrantCalls, received) }
     }

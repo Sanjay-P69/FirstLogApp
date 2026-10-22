@@ -1,69 +1,73 @@
-# Build, checks, and release packaging
+# CI and release APKs
 
-`Android checks` runs on pull requests, pushes to main, and manual dispatches.
-It builds the Kotlin Android debug APK plus unsigned release APK/AAB, runs both
-variants' JVM tests and Android Lint, and checks architecture, formatting, and
-focused Detekt rules. Independent emulator jobs run the Compose instrumentation
-tests on Android API 29 and 35. They do not prove that continuous device tracking,
-permission flows, or every legacy dialog works; physical-device testing remains necessary.
+`Android checks` runs architecture checks, Spotless, focused Detekt analysis, the
+debug build, JVM unit tests, and Android Lint on pull requests, pushes to main,
+and manual dispatch. Emulator tests are not part of CI; connected tests remain
+available locally with `bash gradlew :app:connectedDebugAndroidTest`.
 
-Artifacts expire after 14 days. The debug APK is installable. CI's normal release
-APK is unsigned and cannot be installed directly; the AAB is for distribution tooling.
-Reports are uploaded even when checks fail. Jobs have timeouts, minimum token
-permissions, immutable action commit pins, and cancellation of superseded checks.
-Gradle's setup action validates the wrapper JAR; the distribution also has a SHA-256
-pin. Fork PRs cannot write Gradle caches and receive no signing secrets.
-Dependabot proposes weekly Gradle and Actions updates; updates still require review.
+`Release APK` runs automatically on pushes to main, including PR merges, and via
+Actions → Release APK → Run workflow on main. It checks release unit tests and
+lint, builds the release APK, and uploads it with SHA-256 checksums and available
+R8 mappings. It does not publish a GitHub Release or upload to a store. Workflow
+dispatch becomes available after the workflow reaches the default branch.
 
-AGP 9 defaults to creating unit tests only for the tested build type. We explicitly
-set `android.onlyEnableUnitTestForTheTestedBuildType=false` to retain release tests
-([Android documentation](https://developer.android.com/build/releases/agp-9-0-0-release-notes)).
+## Signing and downloads
 
-## Local commands
+Without signing secrets, release builds still succeed and the artifact is named
+`release-apk-unsigned-<commit>`. That APK is not directly installable. Use the debug
+APK from Android checks for installation, or configure the real release identity.
 
-```sh
-python3 scripts/check_architecture.py
-bash gradlew spotlessCheck detekt
-bash gradlew :app:assembleDebug :app:assembleRelease :app:bundleRelease \
-  :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease
-bash gradlew :app:connectedDebugAndroidTest
-```
-
-Use `bash gradlew spotlessApply` to format changed Kotlin source files. Spotless
-ratchets from commit `4b699abb1a2271335578a3c736691d6c3b50c073`: existing untouched
-files are grandfathered; any touched or new source file must satisfy ktlint.
-Keep that baseline commit in clone history (`fetch-depth: 0` in CI). Formatting
-build scripts is not currently enforced. Detekt runs over all Kotlin sources with
-explicit correctness rules in `config/detekt/detekt.yml`; its default style and
-complexity rules are not enabled. Broaden these as legacy code is migrated.
-
-## Signed packages (manual, main only)
-
-After merging the workflows, create a GitHub environment named `release`. Configure
-required reviewers and restrict deployment branches to main in repository settings.
-Add these environment secrets through GitHub's UI; never commit or paste keys:
+Create a GitHub environment named `release`, restrict its deployment branches to
+main, and add these secrets through GitHub's UI:
 
 - `ANDROID_KEYSTORE_BASE64`: base64 encoding of the existing release keystore.
 - `ANDROID_KEYSTORE_PASSWORD`
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
-Use the original signing identity for updates to an existing installation. This
-workflow does not generate, rotate, or upload a signing key. Set a new versionCode
-and versionName in `app/build.gradle.kts` before distributing a new app version.
+When all four secrets exist, the same workflow builds and verifies an installable
+signed APK, named `release-apk-signed-<commit>`. Partial signing configuration fails
+explicitly. Use the original signing identity to update an existing installation.
+The workflow does not generate or rotate keys. Update versionCode and versionName
+in `app/build.gradle.kts` before distributing a new app version.
 
-Dispatch `Signed release packaging` on main. It checks release sources, builds a
-signed APK and AAB, verifies the APK signature, and uploads them with SHA-256 checksums
-for seven days. The key is written with restrictive permissions to runner temp and
-removed even on failure. Signed tasks disable the configuration cache so signing
-credentials are not serialized into a reusable cache. No store upload or GitHub
-Release publishing occurs. Signing cannot be validated until real secrets exist.
+Download the artifact ZIP from the workflow run and extract its APK. Artifacts and
+reports expire after 14 days; retain signed packages and mappings before distributing
+them. The signing key is written to runner temp with restrictive permissions and
+removed even on failure. Signed builds disable the configuration cache and the
+release job cannot write the Gradle cache.
 
-## Repository settings
+## Local checks
 
-After the new jobs pass, configure a branch ruleset requiring the verify job and
-both device-test jobs, requiring PR review and resolved conversations, and blocking
-force pushes to main. Workflow YAML cannot enforce repository branch protection.
-The connected GitHub app lacks administration access, so these settings must be
-applied by a repository administrator. Likewise, Dependabot activation depends on
-this configuration reaching the default branch.
+```sh
+python3 scripts/check_architecture.py
+bash gradlew spotlessCheck detekt
+bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+bash gradlew :app:assembleRelease :app:testReleaseUnitTest :app:lintRelease
+```
+
+AGP 9 defaults to debug-only unit-test components. The project explicitly sets
+`android.onlyEnableUnitTestForTheTestedBuildType=false` to retain release tests
+([Android documentation](https://developer.android.com/build/releases/agp-9-0-0-release-notes)).
+
+Use `bash gradlew spotlessApply` to format changed Kotlin source files. Spotless
+ratchets from commit `4b699abb1a2271335578a3c736691d6c3b50c073`: untouched existing
+files are grandfathered; touched and new Kotlin source files must satisfy ktlint.
+Keep that baseline in clone history (`fetch-depth: 0` in CI). Build-script formatting
+is not currently enforced. Detekt runs over all Kotlin sources with explicit syntax
+rules in `config/detekt/detekt.yml`; default style/complexity rules remain disabled
+while legacy code is migrated. Android Lint handles Android/API/type correctness.
+
+## Workflow safeguards and repository settings
+
+Actions use immutable commit pins, minimum token permissions, job timeouts, and
+14-day artifact retention. Debug checks cancel superseded runs. Gradle validates
+the wrapper JAR and its distribution has a SHA-256 pin. External fork PRs cannot
+write Gradle caches or receive signing secrets. Dependabot proposes weekly Gradle
+and Actions updates after its configuration reaches the default branch.
+
+After checks pass, a repository administrator can require the verify job, PR review,
+and resolved conversations, and block force pushes to main through a branch ruleset.
+Workflow YAML cannot enforce those settings, and the connected GitHub app lacks
+administration access. Signing secrets and environment branch restrictions also
+need repository settings; no repository settings were changed by this PR.

@@ -60,4 +60,4 @@ Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` 
 - Follow `docs/CI.md`. Run `spotlessCheck detekt` plus debug/release builds, both unit-test variants, and both lint variants when changing build configuration. Run connected tests for UI changes.
 - Use `spotlessApply` before committing touched Kotlin sources. Do not advance the formatting baseline to hide failures.
 - Pin Actions to verified commit SHAs and retain least-privilege permissions. Never expose signing secrets to pull-request jobs or use `pull_request_target` to build untrusted code.
-- Keep release keys out of Git and caches. Signed packaging is manual on main; publication and signing-key rotation require explicit authorization.
+- Keep release keys out of Git and caches. Release APK packaging runs on merges/pushes to main and manual dispatch; signing uses the release environment secrets when configured. Publication and signing-key rotation require explicit authorization.
