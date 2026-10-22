@@ -117,3 +117,7 @@ Use fake data in previews. Runtime tests remain a local/device option; do not ad
 emulator CI, which the user explicitly excluded. The current review changes only
 documentation and agent guidance; it does not supply new FirstLog screenshots or
 claim that these follow-ups have shipped.
+
+## Subsequent chart and metric-detail implementation
+
+The later user request replaced the vertical Trends rows with a compact full-range plot, added recent battery lines and retained-session histograms, and replaced the legacy metric-history dialogs with native overview sheets and full-screen history pages. See [the visualization document](DATA_VISUALIZATION.md) and [current architecture](ARCHITECTURE.md). The remaining Settings grouping and SQLite/coverage migration tasks above are still follow-ups. The future chatbot architecture is described [separately](AGENT_ANALYTICS_ARCHITECTURE.md).

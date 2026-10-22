@@ -2,7 +2,7 @@
 
 Android device-activity tracking and daily summaries, written in Kotlin and Jetpack Compose.
 
-This branch introduces a Material 3 Expressive redesign of the main destinations and separates their rendering from Android tracking and persistence. The existing application ID and storage format are retained. This remains a draft for visual/device review and the documented legacy migrations. Debug APK assembly, unit tests, lint, and the architecture guard passed in [CI](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870).
+This branch introduces a Material 3 Expressive redesign of the main destinations and separates their rendering from Android tracking and persistence. The existing application ID and storage format are retained. Visual/device review and the documented legacy migrations remain. Debug APK assembly, unit tests, lint, formatting, static analysis, and architecture checks passed in [CI run 22](https://github.com/Devasy/FirstLogApp/actions/runs/39803072242). [Download the updated debug APK and reports](https://github.com/Devasy/FirstLogApp/actions/runs/39803072242/artifacts/12436023798); extract app/build/outputs/apk/debug/app-debug.apk from the ZIP.
 
 - [Engineering review and prioritized findings](docs/ENGINEERING_REVIEW.md)
 - [Architecture and migration boundaries](docs/ARCHITECTURE.md)
