@@ -4,11 +4,21 @@ plugins {
     id("com.diffplug.spotless") version "8.0.0"
 }
 
+// Compare trees directly: Spotless's merge-base ratchet broadens unexpectedly after
+// squash merges. Include local untracked sources as well as committed/working changes.
+val formattingChanges = providers.exec {
+    commandLine("git", "diff", "--name-only", "--diff-filter=ACMR",
+        "4b699abb1a2271335578a3c736691d6c3b50c073", "--", "app/src")
+}.standardOutput.asText
+val untrackedSources = providers.exec {
+    commandLine("git", "ls-files", "--others", "--exclude-standard", "--", "app/src")
+}.standardOutput.asText
+val formattingTargets = (formattingChanges.get() + "\n" + untrackedSources.get())
+    .lineSequence().filter { it.endsWith(".kt") }.distinct().map { file(it) }.toList()
+
 spotless {
-    // Enforce formatting when a Kotlin source file is touched, without rewriting legacy code.
-    ratchetFrom("4b699abb1a2271335578a3c736691d6c3b50c073")
     kotlin {
-        target("app/src/**/*.kt")
+        target(formattingTargets)
         ktlint("1.7.1")
     }
 }
