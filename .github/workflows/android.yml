@@ -64,4 +64,3 @@ jobs:
             app/build/reports/
             build/reports/
             app/build/outputs/apk/debug/*.apk
-
