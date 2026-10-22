@@ -4,6 +4,8 @@ Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` 
 
 For UI work, also read `docs/UI_REFERENCE_REVIEW.md`. It records the user's ADNS and Essentials references, inspected source revisions/screenshots, and design work that remains unfinished. Do not claim those patterns are implemented merely because they are documented.
 
+For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visual encoding from the user question, units, aggregation, coverage, and actual distribution. The current progress-row UI is interim and must not be treated as a universal chart standard.
+
 ## Dependency direction
 
 - `MainActivity` wires dependencies, starts the Android service, and hosts the app. Never add receivers, telemetry updates, content-provider queries, or polling loops there.
@@ -39,6 +41,8 @@ For UI work, also read `docs/UI_REFERENCE_REVIEW.md`. It records the user's ADNS
 - Give a switch row one coherent, labelled toggle interaction. A row tap and a switch tap must each dispatch exactly one change; avoid nested handlers that double-toggle. Announce checked, disabled, and expanded states, and preserve at least 48 dp targets. Destructive actions still require the existing confirmations.
 - Verify reference APIs against FirstLog's pinned Material dependency and SDK. Keep opt-ins local. Names such as ExpressiveCard do not make a wrapper native Material 3. Do not copy dependency declarations, assets, blur effects, custom navigation, or large wrapper APIs merely to match a reference screenshot.
 - Keep important metrics visible; use expansion only for secondary density and retain saveable state. Prefer native app-bar scroll behavior and theme motion defaults. Reserve space for any floating control so it cannot cover the last actionable row.
+- Chart interval totals as bars, sampled levels/trends as appropriate lines, category rankings as horizontal bars, and genuine sample distributions as histograms. Verify the actual data first. Do not turn missing/future observations into zeroes, draw a full-day battery curve from two-hour retention, or present a capped session list as a full-population distribution.
+- Keep chart timestamps/buckets, units, provenance, and quality in typed analytics results; choose rendering in presentation. Overlapping categories cannot be stacked as exclusive shares. Provide readable axes, accessible exact values, and a text/table equivalent. A themed chart renderer may complement native Material controls; do not call custom graphs native Material components.
 
 ## Data, privacy, and background operation
 

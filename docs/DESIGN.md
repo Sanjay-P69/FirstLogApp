@@ -6,7 +6,7 @@ FirstLog should answer three questions: how did I use my phone today, when did t
 
 Today begins with the date, a clear title, and screen time as the primary observation. Daily summary is one tonal action below that observation. Activity groups app time, battery usage, and unlocks; Connections groups radios and location; Calls & notifications groups communication. Secondary details sit behind a tap. Wi-Fi and mobile enabled together is labeled as a device state, not proof of simultaneous data transfer. Location enabled is not labeled as time actually spent using GPS.
 
-Trends offers one metric filter and one Day/Month/Year selector. Each recorded time value has a native progress indicator and an explicit numeric label. Bars are scaled to the largest value in the selected period; zero stays zero. This deliberately replaces a decorative custom chart with accessible Material components. App durations remain available in the app list. The previous fixed-factor app battery allocation is removed from Trends because it is not measured per-app battery consumption.
+Trends offers one metric filter and one Day/Month/Year selector. Its current progress rows are an interim implementation. The target visualization follows the user question and the data's units, temporal granularity, coverage, and distribution: interval totals usually need bars, sampled levels can use lines, category rankings need horizontal bars, and session distributions need histograms. See [the data inventory and chart decisions](DATA_VISUALIZATION.md) before implementing a chart. Preserve exact values and an accessible textual/table view alongside the plot. App durations remain available in the app list. The previous fixed-factor app battery allocation is removed because it is not measured per-app battery consumption.
 
 Settings groups appearance, tracking, backups, daily summary, and activity management. Reset and restore show an in-app explanation before modifying user data. Backups use destination-neutral language: a system file picker may save to Drive, but scheduled backups are local. A selected account is only a report label. Background access is described without a guarantee of uninterrupted monitoring.
 
@@ -18,6 +18,7 @@ Settings groups appearance, tracking, backups, daily summary, and activity manag
 - Use native cards, list items, progress indicators, buttons, filter chips, segmented buttons, sheets, dialogs, and navigation. Avoid gradients, glowing icon frames, custom spring/bounce gestures, and unrelated metric accent colors.
 - Metric cards show title, value, and status, with wrapping rather than ellipsis for important data. Adaptive columns use a 180 dp minimum, allowing a single column at small widths or large text.
 - Use 20 dp page spacing, 12 dp gaps between peers, 20–24 dp inside groups, and native minimum interactive target sizes. Do not globally rescale these to cram in more cards.
+- Material components provide the chart's surrounding controls and visual language. A focused, themed chart renderer is allowed for actual data visualization; a progress indicator is not a universal chart substitute. Validate data semantics and accessibility before selecting a renderer or library.
 
 ## Interaction and state
 
