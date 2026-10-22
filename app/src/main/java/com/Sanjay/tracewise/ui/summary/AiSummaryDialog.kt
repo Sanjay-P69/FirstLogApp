@@ -68,6 +68,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AiSummaryDialog(dataManager: DataManager, onDismiss: () -> Unit) {
     val context = LocalContext.current
+    val shareSubjectFormat = stringResource(R.string.summary_share_subject)
     var isLoading by remember { mutableStateOf(true) }
     var summaryText by remember { mutableStateOf("") }
     var loadedSummaryData by remember { mutableStateOf<DailyActivitySummaryData?>(null) }
@@ -403,10 +404,7 @@ fun AiSummaryDialog(dataManager: DataManager, onDismiss: () -> Unit) {
                                 putExtra(Intent.EXTRA_TEXT, summaryText)
                                 putExtra(
                                     Intent.EXTRA_SUBJECT,
-                                    context.getString(
-                                        R.string.summary_share_subject,
-                                        dataManager.getCurrentCycleDate()
-                                    )
+                                    shareSubjectFormat.format(dataManager.getCurrentCycleDate())
                                 )
                                 type = "text/plain"
                             }
