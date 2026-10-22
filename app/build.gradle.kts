@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    buildToolsVersion = "36.0.0"
     namespace = "com.Sanjay.firstlogapp"
     compileSdk {
         version = release(36)

@@ -11,8 +11,8 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -20,6 +20,8 @@ jobs:
           persist-credentials: false
       - name: Check presentation boundaries
         run: python3 scripts/check_architecture.py
+      - name: Test reproducibility verifier behavior
+        run: python3 scripts/test_verify_reproducible.py
       - name: Ensure formatting baseline is available after squash merges
         env:
           GH_TOKEN: ${{ github.token }}
@@ -30,7 +32,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '21.0.8+9'
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
         with:
           packages: platform-tools
@@ -40,12 +42,22 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
       - name: Install project Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Compare two clean unsigned release builds
+        run: python3 scripts/verify_reproducible.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: reproducibility-${{ github.sha }}
+          retention-days: 14
+          path: reproducibility-output/
       - name: Kotlin formatting and static analysis
         run: bash gradlew spotlessCheck detekt --stacktrace
-      - name: Build debug, unit tests, and lint
+      - name: Build debug and release, both unit-test variants, and both lint variants
         if: ${{ !cancelled() }}
         run: >-
-          bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --stacktrace
+          bash gradlew :app:assembleDebug :app:assembleRelease
+          :app:testDebugUnitTest :app:testReleaseUnitTest
+          :app:lintDebug :app:lintRelease --stacktrace
       - name: Print lint errors
         if: failure()
         run: |

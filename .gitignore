@@ -14,3 +14,12 @@ app/build/
 *.aab
 *.keystore
 *.jks
+
+# Local build configuration and release identity (never commit).
+.env
+.env.*
+!.env.example
+/private-signing/
+/reproducibility-output/
+/.gradle-user-home/
+__pycache__/

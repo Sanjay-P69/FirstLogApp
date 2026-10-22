@@ -14,6 +14,11 @@ This branch introduces a Material 3 Expressive redesign of the main destinations
 
 ## Build and check
 
+For a Windows / Antigravity walkthrough, read [instructions.md](instructions.md).
+Copy `.env.example` to `.env` for local paths; use `scripts/build.ps1` to load it.
+Release passwords and keystores are private, ignored files. CI compares two clean
+unsigned release APK builds; see [build repeatability](docs/CI.md#build-repeatability).
+
 Use JDK 21, Android SDK platform 36, and the checked-in Gradle wrapper. Keep the project versions in `gradle/libs.versions.toml`; Material 3 is explicitly pinned to `1.5.0-alpha13` for Expressive APIs.
 
 ```sh

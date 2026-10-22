@@ -1,5 +1,43 @@
 # CI and release APKs
 
+## Build repeatability
+
+Windows/Antigravity setup and secret entry steps are in [instructions.md](../instructions.md).
+CI uses Ubuntu 24.04, Temurin 21.0.8+9, the checksum-pinned Gradle 9.6.0 wrapper,
+SDK platform 36, and explicitly selected Build-Tools 36.0.0. The daemon criteria
+now select Temurin 21 instead of the inherited Java 25 download URLs. Install
+the documented JDK locally; there are no daemon auto-download URLs in this file.
+
+`python3 scripts/verify_reproducible.py` performs two clean unsigned release builds,
+with task reruns and build/configuration caches disabled, then compares APK SHA-256
+hashes. Signing credentials and known GitHub tokens are removed from subprocess
+environments. CI uploads both APKs and `result.json` as `reproducibility-<commit>`;
+a mismatch fails the job. Both outputs intentionally use the same checkout path.
+This catches nondeterministic outputs in one toolchain; it does not prove byte
+identity across hosts, operating systems, or future SDK repository updates.
+
+Direct dependencies and plugins are version-pinned, but transitive dependency
+locks and artifact checksum verification metadata are not yet committed. The
+hosted runner image and SDK platform revision are not immutable. A fully hermetic,
+independently verified release remains future work. Gradle 9's reproducible archive
+defaults alone do not prove Android APK reproducibility.
+
+Local Windows entry points are `scripts/build.ps1 debug`, `release`, `check`, and
+`reproduce`. `.env` is parsed as data by that helper, not executed as a script.
+`FATHER_ACCOUNT_GH` is ignored by the build helper and must be removed from any
+shared copy. Neither `.env` nor `private-signing/` belongs in Git or CI artifacts.
+
+Validation of this change: architecture guard (Python UTF-8 mode), PowerShell
+parser, Python syntax, script behavior tests, secret-ignore checks, and
+`git diff --check` are recorded locally. Actual Android build/lint/Gradle analysis
+and the two-build APK comparison require the documented JDK/SDK; do not treat a
+configured workflow as proof it passed. No app UI or runtime permissions changed.
+On October 22, 2026, the three verifier behavior tests passed. The Gradle check
+command was attempted but blocked downloading Gradle (`UnknownHostException:
+services.gradle.org`); the local PC also has only JDK 17 and no configured SDK.
+Consequently Spotless, Detekt, both APK builds, both unit-test variants, both lint
+variants, and actual APK byte reproducibility remain unverified for these changes.
+
 `Android checks` runs architecture checks, Spotless, focused Detekt analysis, the
 debug build, JVM unit tests, and Android Lint on pull requests, pushes to main,
 and manual dispatch. Emulator tests are not part of CI; connected tests remain
