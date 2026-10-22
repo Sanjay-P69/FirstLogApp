@@ -1,5 +1,7 @@
 """Exercise comparison failures and secret isolation without an Android SDK."""
 import importlib.util
+from contextlib import redirect_stdout
+import io
 import os
 from pathlib import Path
 import subprocess
@@ -45,7 +47,8 @@ class ReproducibilityTest(unittest.TestCase):
                      patch.dict(os.environ, {'ANDROID_KEYSTORE_PASSWORD': 'test',
                                 'ANDROID_KEYSTORE_PATH': 'test', 'FATHER_ACCOUNT_GH': 'test',
                                 'GH_TOKEN': 'test', 'GITHUB_TOKEN': 'test'}):
-                    verify.main()
+                    with redirect_stdout(io.StringIO()):
+                        verify.main()
                 self.assertEqual(len(calls), 2)
                 self.assertTrue((root / 'reproducibility-output/result.json').exists())
             finally:

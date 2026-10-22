@@ -3,7 +3,7 @@
 ## Build repeatability
 
 Windows/Antigravity setup and secret entry steps are in [instructions.md](../instructions.md).
-CI uses Ubuntu 24.04, Temurin 21.0.8+9, the checksum-pinned Gradle 9.6.0 wrapper,
+CI uses Ubuntu 24.04, Temurin 21.0.8+9 (setup-java identifier `21.0.8+9.0.LTS`), the checksum-pinned Gradle 9.6.0 wrapper,
 SDK platform 36, and explicitly selected Build-Tools 36.0.0. The daemon criteria
 now select Temurin 21 instead of the inherited Java 25 download URLs. Install
 the documented JDK locally; there are no daemon auto-download URLs in this file.
@@ -37,6 +37,16 @@ command was attempted but blocked downloading Gradle (`UnknownHostException:
 services.gradle.org`); the local PC also has only JDK 17 and no configured SDK.
 Consequently Spotless, Detekt, both APK builds, both unit-test variants, both lint
 variants, and actual APK byte reproducibility remain unverified for these changes.
+
+The follow-up [online run](https://github.com/Sanjay-P69/FirstLogApp/actions/runs/39816848480)
+at PR head `a44a32b125ab5d3419b4293bd08e603c79d82814` passed both APK builds,
+both unit-test and lint variants, Spotless, Detekt, architecture/verifier checks,
+and two matching clean unsigned release builds. GitHub tested merge commit
+`3ae12508e01ec4ac6428d9235669fd7db7dcf185`. The first attempted run failed Java
+setup because `21.0.8+9` did not match Temurin's full `21.0.8+9.0.LTS` identifier;
+both workflows now use the verified identifier. Subsequent Tracewise branding
+changes require their own run. CI also compiles the instrumentation APK without
+running an emulator; installed-device update and identity tests remain device checks.
 
 `Android checks` runs architecture checks, Spotless, focused Detekt analysis, the
 debug build, JVM unit tests, and Android Lint on pull requests, pushes to main,

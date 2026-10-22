@@ -1,42 +1,7 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="48dp"
-    android:height="48dp"
-    android:viewportWidth="96"
-    android:viewportHeight="96">
-
-    <!-- 1. Top-Left Square: Screen (Cyan) -->
-    <path
-        android:fillColor="#00BCD4"
-        android:pathData="M14,6h22c4.42,0 8,3.58 8,8v22c0,4.42 -3.58,8 -8,8H14c-4.42,0 -8,-3.58 -8,-8V14c0,-4.42 3.58,-8 8,-8z"/>
-    <!-- Phone outline & screen -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M29,14h-8c-1.66,0 -3,1.34 -3,3v18c0,1.66 1.34,3 3,3h8c1.66,0 3,-1.34 3,-3V17c0,-1.66 -1.34,-3 -3,-3zm-1,19h-6v-14h6v14zm-3,4c-0.55,0 -1,-0.45 -1,-1s0.45,-1 1,-1 1,0.45 1,1 -0.45,1 -1,1z"/>
-
-    <!-- 2. Top-Right Square: Wi-Fi (Sky Blue) -->
-    <path
-        android:fillColor="#03A9F4"
-        android:pathData="M60,6h22c4.42,0 8,3.58 8,8v22c0,4.42 -3.58,8 -8,8H60c-4.42,0 -8,-3.58 -8,-8V14c0,-4.42 3.58,-8 8,-8z"/>
-    <!-- Wi-Fi Waves -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M71,34c-0.83,0 -1.5,0.67 -1.5,1.5s0.67,1.5 1.5,1.5 1.5,-0.67 1.5,-1.5 -0.67,-1.5 -1.5,-1.5zm-5,-5.5l1.41,1.41C68.96,28.36 70.96,27.5 73,27.5s4.04,0.86 5.59,2.41L80,28.5C78.07,26.57 75.67,25.5 73,25.5s-5.07,1.07 -7,3zM62,24.5l1.41,1.41C66.11,23.21 69.45,22 73,22s6.89,1.21 9.59,3.91L84,24.5C80.93,21.43 77.06,20 73,20s-7.93,1.43 -11,4.5z"/>
-
-    <!-- 3. Bottom-Left Square: GPS / Location (Emerald Teal) -->
-    <path
-        android:fillColor="#009688"
-        android:pathData="M14,52h22c4.42,0 8,3.58 8,8v22c0,4.42 -3.58,8 -8,8H14c-4.42,0 -8,-3.58 -8,-8V60c0,-4.42 3.58,-8 8,-8z"/>
-    <!-- Location Pin -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M25,60c-4.42,0 -8,3.58 -8,8 0,6 8,15 8,15s8,-9 8,-15c0,-4.42 -3.58,-8 -8,-8zm0,11c-1.66,0 -3,-1.34 -3,-3s1.34,-3 3,-3 3,1.34 3,3 -1.34,3 -3,3z"/>
-
-    <!-- 4. Bottom-Right Square: Bluetooth (Warm Amber) -->
-    <path
-        android:fillColor="#FF9800"
-        android:pathData="M60,52h22c4.42,0 8,3.58 8,8v22c0,4.42 -3.58,8 -8,8H60c-4.42,0 -8,-3.58 -8,-8V60c0,-4.42 3.58,-8 8,-8z"/>
-    <!-- Bluetooth Rune -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M71.5,60h-1v9.09l-4.29,-4.3 -1.42,1.42L70.08,71.5l-5.29,5.29 1.42,1.42 4.29,-4.3V83h1l6.71,-6.71 -4.71,-4.79 4.71,-4.79L71.5,60zm1,3.41l2.88,2.88 -2.88,2.88V63.41zm0,16.18V73.83l2.88,2.88 -2.88,2.88z"/>
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#123F46" android:pathData="M0,0H108V108H0Z"/>
+    <path android:fillColor="@android:color/transparent" android:strokeColor="#F6F4E9" android:strokeWidth="4.5" android:strokeLineJoin="round" android:pathData="M40,31H68C74.6,31 80,36.4 80,43V61C80,67.6 74.6,73 68,73H51L39,81V73C32.4,72.5 28,67.3 28,61V43C28,36.4 33.4,31 40,31Z"/>
+    <path android:fillColor="@android:color/transparent" android:strokeColor="#F6F4E9" android:strokeWidth="4.5" android:strokeLineJoin="round" android:strokeLineCap="round" android:pathData="M39,58L49,48L59,57L70,43"/>
+    <path android:fillColor="#A8E2C7" android:pathData="M73.5,43A3.5,3.5 0,1 1,66.5,43A3.5,3.5 0,1 1,73.5,43Z"/>
 </vector>

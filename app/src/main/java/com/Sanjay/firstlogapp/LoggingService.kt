@@ -1,9 +1,5 @@
 package com.Sanjay.firstlogapp
 
-import com.Sanjay.firstlogapp.data.device.AppUsageHelper
-import com.Sanjay.firstlogapp.data.device.DeviceStateHelper
-import com.Sanjay.firstlogapp.data.local.DataManager
-
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -30,6 +26,10 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.sanjay.tracewise.R
+import com.sanjay.tracewise.data.device.AppUsageHelper
+import com.sanjay.tracewise.data.device.DeviceStateHelper
+import com.sanjay.tracewise.data.local.DataManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -71,7 +71,8 @@ class LoggingService : Service() {
                 Intent.ACTION_SCREEN_OFF -> {
                     val sessionDur = if (lastScreenOnTime > 0L) (now - lastScreenOnTime) else 0L
                     if (unlockedDuringThisScreenOn) {
-                        val isQuickGlance = sessionDur < 10_000L // < 10s: quick glance, >= 10s: actual usage
+                        // Under 10 seconds is a quick glance; otherwise actual usage.
+                        val isQuickGlance = sessionDur < 10_000L
                         dataManager.recordUnlockSessionEnd(isQuickGlance, sessionDur, now)
                     } else if (sessionDur > 0L) {
                         dataManager.recordLockScreenGlance(sessionDur, now)
@@ -124,7 +125,10 @@ class LoggingService : Service() {
                     dataManager.updateMetricState("both_wifi_data", isWifi && isData, now)
                 }
                 BluetoothAdapter.ACTION_STATE_CHANGED -> {
-                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                    val state = intent.getIntExtra(
+                        BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR
+                    )
                     val isBtOn = when (state) {
                         BluetoothAdapter.STATE_ON -> true
                         BluetoothAdapter.STATE_OFF -> false
@@ -132,10 +136,22 @@ class LoggingService : Service() {
                     }
                     dataManager.updateMetricState("bluetooth", isBtOn, now)
                     if (!isBtOn) {
-                        dataManager.onBluetoothDeviceDisconnected(BluetoothCategoryHelper.CAT_BUDS, now)
-                        dataManager.onBluetoothDeviceDisconnected(BluetoothCategoryHelper.CAT_WATCH, now)
-                        dataManager.onBluetoothDeviceDisconnected(BluetoothCategoryHelper.CAT_AUTO, now)
-                        dataManager.onBluetoothDeviceDisconnected(BluetoothCategoryHelper.CAT_OTHER, now)
+                        dataManager.onBluetoothDeviceDisconnected(
+                            BluetoothCategoryHelper.CAT_BUDS,
+                            now
+                        )
+                        dataManager.onBluetoothDeviceDisconnected(
+                            BluetoothCategoryHelper.CAT_WATCH,
+                            now
+                        )
+                        dataManager.onBluetoothDeviceDisconnected(
+                            BluetoothCategoryHelper.CAT_AUTO,
+                            now
+                        )
+                        dataManager.onBluetoothDeviceDisconnected(
+                            BluetoothCategoryHelper.CAT_OTHER,
+                            now
+                        )
                     }
                 }
                 BluetoothDevice.ACTION_ACL_CONNECTED -> {
@@ -146,7 +162,11 @@ class LoggingService : Service() {
                 }
                 LocationManager.PROVIDERS_CHANGED_ACTION,
                 "android.location.PROVIDERS_CHANGED" -> {
-                    dataManager.updateMetricState("gps", DeviceStateHelper.isGpsEnabled(this@LoggingService), now)
+                    dataManager.updateMetricState(
+                        "gps",
+                        DeviceStateHelper.isGpsEnabled(this@LoggingService),
+                        now
+                    )
                 }
             }
         }
@@ -172,10 +192,18 @@ class LoggingService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             audioDeviceCallback = object : AudioDeviceCallback() {
                 override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) {
-                    BluetoothCategoryHelper.checkAllBluetoothConnections(this@LoggingService, dataManager, System.currentTimeMillis())
+                    BluetoothCategoryHelper.checkAllBluetoothConnections(
+                        this@LoggingService,
+                        dataManager,
+                        System.currentTimeMillis()
+                    )
                 }
                 override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) {
-                    BluetoothCategoryHelper.checkAllBluetoothConnections(this@LoggingService, dataManager, System.currentTimeMillis())
+                    BluetoothCategoryHelper.checkAllBluetoothConnections(
+                        this@LoggingService,
+                        dataManager,
+                        System.currentTimeMillis()
+                    )
                 }
             }
             try {
@@ -231,7 +259,7 @@ class LoggingService : Service() {
         }
 
         val notification: Notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("FirstLogApp Active")
+            .setContentTitle(getString(R.string.logging_notification_title))
             .setContentText("Monitoring screen, radio, and call activity 24/7")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .setOngoing(true)
@@ -266,10 +294,20 @@ class LoggingService : Service() {
         }
         try {
             // Bluetooth broadcasts can originate in a privileged process outside the system UID.
-            ContextCompat.registerReceiver(this, backgroundReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
+            ContextCompat.registerReceiver(
+                this,
+                backgroundReceiver,
+                filter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
         } catch (_: Exception) {
             try {
-                ContextCompat.registerReceiver(this, backgroundReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+                ContextCompat.registerReceiver(
+                    this,
+                    backgroundReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+                )
             } catch (_: Exception) {}
         }
     }
@@ -314,16 +352,32 @@ class LoggingService : Service() {
                 dataManager.updateMetricState("wifi", isWifi, now)
                 dataManager.updateMetricState("data", isData, now)
                 dataManager.updateMetricState("both_wifi_data", isWifi && isData, now)
-                dataManager.updateMetricState("bluetooth", DeviceStateHelper.isBluetoothEnabled(this@LoggingService), now)
-                dataManager.updateMetricState("gps", DeviceStateHelper.isGpsEnabled(this@LoggingService), now)
+                dataManager.updateMetricState(
+                    "bluetooth",
+                    DeviceStateHelper.isBluetoothEnabled(this@LoggingService),
+                    now
+                )
+                dataManager.updateMetricState(
+                    "gps",
+                    DeviceStateHelper.isGpsEnabled(this@LoggingService),
+                    now
+                )
 
-                BluetoothCategoryHelper.checkAllBluetoothConnections(this@LoggingService, dataManager, now)
+                BluetoothCategoryHelper.checkAllBluetoothConnections(
+                    this@LoggingService,
+                    dataManager,
+                    now
+                )
 
                 // Real-time app usage tracking (only when screen is interactive!)
                 trackForegroundApp(isScreenOn, now)
 
                 // Scheduled Sunday 6:00 AM Auto Backup check
-                AutoBackupHelper.checkAndRunSundayAutoBackup(this@LoggingService, dataManager, forceRun = false)
+                AutoBackupHelper.checkAndRunSundayAutoBackup(
+                    this@LoggingService,
+                    dataManager,
+                    forceRun = false
+                )
             }
         }
     }
@@ -373,9 +427,7 @@ class LoggingService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
-    }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
         super.onDestroy()

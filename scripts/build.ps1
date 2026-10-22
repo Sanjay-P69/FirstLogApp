@@ -40,7 +40,7 @@ if ($Mode -eq 'release') {
 $tasks = switch ($Mode) {
     'debug' { @(':app:assembleDebug') }
     'release' { @(':app:assembleRelease') }
-    'check' { @('spotlessCheck', 'detekt', ':app:assembleDebug', ':app:assembleRelease', ':app:testDebugUnitTest', ':app:testReleaseUnitTest', ':app:lintDebug', ':app:lintRelease') }
+    'check' { @('spotlessCheck', 'detekt', ':app:assembleDebug', ':app:assembleRelease', ':app:assembleDebugAndroidTest', ':app:testDebugUnitTest', ':app:testReleaseUnitTest', ':app:lintDebug', ':app:lintRelease') }
 }
 & ./gradlew.bat @tasks --no-configuration-cache --stacktrace
 if ($LASTEXITCODE -ne 0) { throw 'Build failed. Read the first error above; do not share secret files or passwords in logs.' }

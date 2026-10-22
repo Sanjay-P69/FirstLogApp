@@ -1,5 +1,34 @@
 # Future conversational analytics over SQLite
 
+## Product direction confirmed October 22, 2026
+
+The intended product is an AI-assisted personal activity and settings companion:
+users ask questions, explore multi-step SQL analytics, generate charts, change
+supported settings through conversation, and receive useful proactive observations.
+SQLite is the permanent on-device data foundation, not a temporary cache or an
+alternative persistence path maintained beside preferences. This direction is a
+target; the current preferences implementation still requires a tested migration.
+
+Permanent storage means durable history across process restarts, app updates, and
+ordinary use. Do not silently expire recorded history or discard it on a parsing
+failure. Explicit user deletion, uninstall behavior, export/restore, device loss,
+and storage exhaustion require documented behavior; SQLite alone does not provide
+an external recovery backup. Keep schema upgrades and recovery paths versioned.
+
+Conversational settings actions use a separate, typed settings-action boundary:
+validate supported values and permissions, apply through the owning repository or
+Android settings flow, and report the actual result. Read-only analytics SQL must
+never become a write path for settings or telemetry. Retain existing confirmations
+for destructive actions and the Android system's permission decisions.
+
+Proactive observations should be opt-in, grounded in recorded coverage, and explain
+their supporting period and measurements. Deduplicate and rate-limit observations;
+let users control timing and disable them. Do not describe correlations or missing
+observations as established causes. Schedule work within Android background limits.
+
+The naming/icon work does not implement SQLite migration, a chat agent, autonomous
+settings changes, or proactive analysis.
+
 The intended product includes a chat destination that can answer complex questions
 about recorded device activity by querying SQLite. This is an architectural target;
 the current app still persists telemetry in preferences/JSON, and the existing daily

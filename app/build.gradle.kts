@@ -5,7 +5,7 @@ plugins {
 
 android {
     buildToolsVersion = "36.0.0"
-    namespace = "com.Sanjay.firstlogapp"
+    namespace = "com.sanjay.tracewise"
     compileSdk {
         version = release(36)
     }

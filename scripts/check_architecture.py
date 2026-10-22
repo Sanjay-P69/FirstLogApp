@@ -4,12 +4,12 @@ from pathlib import Path
 import re
 import sys
 
-root = Path(__file__).resolve().parents[1] / "app/src/main/java/com/Sanjay/firstlogapp"
+root = Path(__file__).resolve().parents[1] / "app/src/main/java"
 errors = []
 for path in root.rglob("*.kt"):
-    source = path.read_text()
+    source = path.read_text(encoding="utf-8")
     relative = path.relative_to(root)
-    if relative.parts[0] == "data" or path.name.endswith("Service.kt"):
+    if "data" in relative.parts or path.name.endswith("Service.kt"):
         if re.search(r"^import .*\.(?:ui|compose)\.", source, re.M):
             errors.append(f"{relative}: data/platform layer depends on UI")
     if path.name.endswith("Content.kt"):
@@ -18,7 +18,7 @@ for path in root.rglob("*.kt"):
             errors.append(f"{relative}: Content must only render state and emit actions")
         if re.search(r"Color\(0x|Brush\.|fontSize\s*=", source):
             errors.append(f"{relative}: use Material theme roles and typography")
-activity = (root / "MainActivity.kt").read_text()
+activity = (root / "com/Sanjay/firstlogapp/MainActivity.kt").read_text(encoding="utf-8")
 if re.search(r"registerReceiver|updateMetricState|NetworkCallback|UsageStatsManager", activity):
     errors.append("MainActivity must not monitor devices or mutate telemetry")
 if errors:

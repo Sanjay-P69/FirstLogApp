@@ -1,4 +1,4 @@
-# FirstLog: instructions for Dad (Windows + Antigravity)
+# Tracewise (previously FirstLog): instructions for Dad
 
 An APK is the Android app installation file. Building turns this project's files
 into an APK. You do not need to understand the programming to follow these steps.
@@ -11,8 +11,13 @@ history needed by the formatting checks; GitHub's Download ZIP does not.
 Use a short folder such as `C:\Projects\FirstLogApp`, outside OneDrive.
 Open Antigravity, choose Open Folder, and select that folder.
 
-If Devasy sent `FirstLog-Dad-PRIVATE.zip`, extract it privately, then copy its
-`.env`, `private-signing` folder, and `instructions.md` into the project root
+Until [PR #7](https://github.com/Sanjay-P69/FirstLogApp/pull/7) is merged, use the
+`codex/reproducible-builds` branch containing this setup and Tracewise branding.
+In the terminal of a fresh clone, run `git checkout codex/reproducible-builds`.
+After the PR is merged, a fresh clone of main contains the same setup.
+
+If Devasy sent `Tracewise-Dad-PRIVATE.zip`, extract it privately, then copy its
+`.env`, `private-signing` folder, `instructions.md`, and `todo for sanjay.md` into the project root
 (beside `gradlew.bat`). It is a private supplement to the Git clone, not the
 complete app source. Windows Explorer may hide `.env`; enable hidden items.
 
@@ -141,7 +146,9 @@ The Android checks workflow also uploads a `reproducibility-...` comparison repo
 
 ## 7. A safe prompt to paste into Antigravity
 
-> Read AGENTS.md, instructions.md, and docs/CI.md. Help me build this existing
+> Read AGENTS.md, instructions.md, todo for sanjay.md, and docs/CI.md. First explain
+> that Devasy prefers Tracewise, show the other two naming options in the TODO,
+> and ask whether I agree before further branding changes. Help me build this existing
 > Android project on Windows. I am a beginner. Check that Temurin 21.0.8+9 and
 > Android SDK platform 36 / Build-Tools 36.0.0 are installed. Help me set the two
 > local paths without displaying any passwords or tokens. Run scripts/build.ps1

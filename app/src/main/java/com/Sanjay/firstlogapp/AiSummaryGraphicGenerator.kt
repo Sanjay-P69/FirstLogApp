@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Environment
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.sanjay.tracewise.R
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -59,57 +60,42 @@ object AiSummaryGraphicGenerator {
         // ==========================================
         // 1. HEADER SECTION
         // ==========================================
-        // Logo: 4-squares icon with Screen, Wi-Fi, GPS, and Bluetooth
+        // Reuse the same brand mark as the launcher and in-app summaries.
         val logoDrawable = ContextCompat.getDrawable(context, R.drawable.ic_firstlog_logo)
-        if (logoDrawable != null) {
-            logoDrawable.setBounds(24, 20, 24 + 24, 20 + 24)
-            logoDrawable.draw(canvas)
-        } else {
-            val logoColors = intArrayOf(0xFF00BCD4.toInt(), 0xFF03A9F4.toInt(), 0xFF009688.toInt(), 0xFFFF9800.toInt())
-            val sqSize = 10f
-            val sqGap = 3f
-            val startX = 24f
-            val startY = 22f
-            for (i in 0 until 4) {
-                val col = i % 2
-                val row = i / 2
-                fillPaint.color = logoColors[i]
-                canvas.drawRoundRect(
-                    startX + col * (sqSize + sqGap),
-                    startY + row * (sqSize + sqGap),
-                    startX + col * (sqSize + sqGap) + sqSize,
-                    startY + row * (sqSize + sqGap) + sqSize,
-                    3f, 3f, fillPaint
-                )
-            }
+        logoDrawable?.let {
+            it.setBounds(24, 20, 48, 44)
+            it.draw(canvas)
         }
 
-        // App title: FIRSTLOG
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         textPaint.textSize = 24f
         textPaint.color = textWhite
-        canvas.drawText("FIRST", 54f, 40f, textPaint)
-        val firstWidth = textPaint.measureText("FIRST")
-        textPaint.color = accentCyan
-        canvas.drawText("LOG", 54f + firstWidth, 40f, textPaint)
-        val logWidth = textPaint.measureText("LOG")
+        val appName = context.getString(R.string.app_name)
+        canvas.drawText(appName, 54f, 40f, textPaint)
+        val titleWidth = textPaint.measureText(appName)
+        val logWidth = 0f
 
         // Divider
         fillPaint.color = cardBorder
-        canvas.drawRect(54f + firstWidth + logWidth + 14f, 22f, 54f + firstWidth + logWidth + 16f, 44f, fillPaint)
+        canvas.drawRect(54f + titleWidth + 14f, 22f, 54f + titleWidth + 16f, 44f, fillPaint)
 
         // Subtitle: DAILY ACTIVITY SUMMARY REPORT
         textPaint.color = textWhite
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         textPaint.textSize = 22f
-        canvas.drawText("DAILY ACTIVITY SUMMARY REPORT", 54f + firstWidth + logWidth + 28f, 40f, textPaint)
+        canvas.drawText("DAILY ACTIVITY SUMMARY REPORT", 54f + titleWidth + 28f, 40f, textPaint)
 
         // Subtitle timestamp
         val nowStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 12f
         textPaint.color = textMuted
-        canvas.drawText("DATE: ${data.dateStr} | GENERATED: ${nowStr.uppercase(Locale.getDefault())}", 248f, 58f, textPaint)
+        canvas.drawText(
+            "DATE: ${data.dateStr} | GENERATED: ${nowStr.uppercase(Locale.getDefault())}",
+            248f,
+            58f,
+            textPaint
+        )
 
         // Header Date on Right
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -155,7 +141,14 @@ object AiSummaryGraphicGenerator {
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
-        canvas.drawText("${data.incomingConnectedCount} Connected [${formatDurShort(data.incomingConnectedDurSec * 1000L)}], ${data.incomingMissedCount} Missed", 58f, topY + 78f, textPaint)
+        canvas.drawText(
+            "${data.incomingConnectedCount} Connected [${formatDurShort(
+                data.incomingConnectedDurSec * 1000L
+            )}], ${data.incomingMissedCount} Missed",
+            58f,
+            topY + 78f,
+            textPaint
+        )
 
         // Missed Call Detail
         textPaint.color = accentOrange
@@ -169,7 +162,13 @@ object AiSummaryGraphicGenerator {
         textPaint.textSize = 11f
         textPaint.color = textMuted
         val lastMissed = data.incomingMissedDetails.firstOrNull() ?: "None recorded"
-        val clampedMissed = if (lastMissed.length > 32) lastMissed.substring(0, 30) + "…" else lastMissed
+        val clampedMissed = if (lastMissed.length >
+            32
+        ) {
+            lastMissed.substring(0, 30) + "…"
+        } else {
+            lastMissed
+        }
         canvas.drawText(clampedMissed, 58f, topY + 128f, textPaint)
 
         // Outgoing
@@ -183,7 +182,14 @@ object AiSummaryGraphicGenerator {
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
-        canvas.drawText("${data.outgoingConnectedCount} Connected [${formatDurShort(data.outgoingConnectedDurSec * 1000L)}], ${data.outgoingUnconnectedCount} Unanswered", 58f, topY + 178f, textPaint)
+        canvas.drawText(
+            "${data.outgoingConnectedCount} Connected [${formatDurShort(
+                data.outgoingConnectedDurSec * 1000L
+            )}], ${data.outgoingUnconnectedCount} Unanswered",
+            58f,
+            topY + 178f,
+            textPaint
+        )
 
         // Card 2: SCREEN ENGAGEMENT (x: 324 to 790)
         val card2Rect = RectF(324f, topY, 790f, topY + cardHeight)
@@ -229,10 +235,18 @@ object AiSummaryGraphicGenerator {
         val donutCy = topY + 120f
         val donutRadius = 45f
         val donutStroke = 18f
-        val donutRect = RectF(donutCx - donutRadius, donutCy - donutRadius, donutCx + donutRadius, donutCy + donutRadius)
+        val donutRect = RectF(
+            donutCx - donutRadius,
+            donutCy - donutRadius,
+            donutCx + donutRadius,
+            donutCy + donutRadius
+        )
 
         strokePaint.strokeWidth = donutStroke
-        val totalUnlocks = (data.unlockPin + data.unlockFace + data.unlockFingerprint).coerceAtLeast(1)
+        val totalUnlocks =
+            (data.unlockPin + data.unlockFace + data.unlockFingerprint).coerceAtLeast(
+                1
+            )
         var startAngle = -90f
 
         val pinSweep = (data.unlockPin.toFloat() / totalUnlocks) * 360f
@@ -286,7 +300,12 @@ object AiSummaryGraphicGenerator {
         textPaint.color = textWhite
         textPaint.textSize = 16f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(NetworkDataHelper.formatBytes(data.wifiDataBytes), 842f, topY + 68f, textPaint)
+        canvas.drawText(
+            NetworkDataHelper.formatBytes(data.wifiDataBytes),
+            842f,
+            topY + 68f,
+            textPaint
+        )
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
@@ -299,11 +318,21 @@ object AiSummaryGraphicGenerator {
         textPaint.color = textWhite
         textPaint.textSize = 16f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(NetworkDataHelper.formatBytes(data.mobileDataBytes), 842f, topY + 120f, textPaint)
+        canvas.drawText(
+            NetworkDataHelper.formatBytes(data.mobileDataBytes),
+            842f,
+            topY + 120f,
+            textPaint
+        )
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
-        canvas.drawText("Mobile Data (${formatDurShort(data.mobileDataTimeMs)})", 842f, topY + 136f, textPaint)
+        canvas.drawText(
+            "Mobile Data (${formatDurShort(data.mobileDataTimeMs)})",
+            842f,
+            topY + 136f,
+            textPaint
+        )
 
         // Bluetooth
         textPaint.color = accentCyan
@@ -346,7 +375,16 @@ object AiSummaryGraphicGenerator {
         textPaint.color = textWhite
         textPaint.textSize = 16f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("${String.format(Locale.getDefault(), "%.1f", data.screenOnDrainRatePctPerHour)}% / hour", 1082f, topY + 120f, textPaint)
+        canvas.drawText(
+            "${String.format(
+                Locale.getDefault(),
+                "%.1f",
+                data.screenOnDrainRatePctPerHour
+            )}% / hour",
+            1082f,
+            topY + 120f,
+            textPaint
+        )
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
@@ -363,7 +401,12 @@ object AiSummaryGraphicGenerator {
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         textPaint.textSize = 11f
         textPaint.color = textMuted
-        canvas.drawText("Charging (${data.chargingSessionCount} sessions)", 1082f, topY + 188f, textPaint)
+        canvas.drawText(
+            "Charging (${data.chargingSessionCount} sessions)",
+            1082f,
+            topY + 188f,
+            textPaint
+        )
 
         // ==========================================
         // 3. MIDDLE SECTION: APPLICATION ENGAGEMENT (TOP APPS)
@@ -392,7 +435,7 @@ object AiSummaryGraphicGenerator {
             0xFFF97316.toInt(), // Orange
             0xFF8B5CF6.toInt(), // Purple
             0xFF3B82F6.toInt(), // Blue
-            0xFF14B8A6.toInt()  // Teal
+            0xFF14B8A6.toInt() // Teal
         )
 
         // Central Donut Chart
@@ -400,7 +443,12 @@ object AiSummaryGraphicGenerator {
         val appDonutCy = midY + 150f
         val appDonutRadius = 65f
         val appDonutStroke = 28f
-        val appDonutRect = RectF(appDonutCx - appDonutRadius, appDonutCy - appDonutRadius, appDonutCx + appDonutRadius, appDonutCy + appDonutRadius)
+        val appDonutRect = RectF(
+            appDonutCx - appDonutRadius,
+            appDonutCy - appDonutRadius,
+            appDonutCx + appDonutRadius,
+            appDonutCy + appDonutRadius
+        )
 
         strokePaint.strokeWidth = appDonutStroke
         var appStartAngle = -90f
@@ -412,7 +460,13 @@ object AiSummaryGraphicGenerator {
             apps.forEachIndexed { i, (_, dur) ->
                 val slice = (dur.toFloat() / totalAppTime) * 360f
                 strokePaint.color = appColors[i % appColors.size]
-                canvas.drawArc(appDonutRect, appStartAngle, slice.coerceAtLeast(2f), false, strokePaint)
+                canvas.drawArc(
+                    appDonutRect,
+                    appStartAngle,
+                    slice.coerceAtLeast(2f),
+                    false,
+                    strokePaint
+                )
                 appStartAngle += slice
             }
         }
@@ -439,7 +493,12 @@ object AiSummaryGraphicGenerator {
             textPaint.textSize = 11f
             textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             val pct = (dur.toFloat() / totalAppTime) * 100f
-            canvas.drawText("${formatDurShort(dur)} (${String.format(Locale.getDefault(), "%.1f%%", pct)})", 292f, leftItemY + 16f, textPaint)
+            canvas.drawText(
+                "${formatDurShort(dur)} (${String.format(Locale.getDefault(), "%.1f%%", pct)})",
+                292f,
+                leftItemY + 16f,
+                textPaint
+            )
 
             leftItemY += 56f
         }
@@ -467,7 +526,12 @@ object AiSummaryGraphicGenerator {
             textPaint.textSize = 11f
             textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             val pct = (dur.toFloat() / totalAppTime) * 100f
-            canvas.drawText("${formatDurShort(dur)} (${String.format(Locale.getDefault(), "%.1f%%", pct)})", 842f, rightItemY + 16f, textPaint)
+            canvas.drawText(
+                "${formatDurShort(dur)} (${String.format(Locale.getDefault(), "%.1f%%", pct)})",
+                842f,
+                rightItemY + 16f,
+                textPaint
+            )
 
             rightItemY += 46f
         }
@@ -490,12 +554,24 @@ object AiSummaryGraphicGenerator {
         canvas.drawText(botTitle, (width - botTitleW) / 2f, botY + 26f, textPaint)
 
         // Insights Lines
-        val glanceRatio = if (data.unlockCount > 0) ((data.quickGlanceCount.toDouble() / data.unlockCount) * 100).toInt() else 0
-        val drainRateStr = String.format(Locale.getDefault(), "%.1f", data.screenOnDrainRatePctPerHour)
+        val glanceRatio = if (data.unlockCount >
+            0
+        ) {
+            ((data.quickGlanceCount.toDouble() / data.unlockCount) * 100).toInt()
+        } else {
+            0
+        }
+        val drainRateStr = String.format(
+            Locale.getDefault(),
+            "%.1f",
+            data.screenOnDrainRatePctPerHour
+        )
         val totalCalls = data.incomingTotalCount + data.outgoingTotalCount
 
         val line1Prefix = "BEHAVIORAL PATTERN: "
-        val line1Body = "You checked your device ${data.unlockCount} times today. $glanceRatio% were quick lock-screen glances, while ${data.actualUsageCount} developed into active work sessions."
+        val line1Body = "You checked your device ${data.unlockCount} times today. " +
+            "$glanceRatio% were quick lock-screen glances, " +
+            "while ${data.actualUsageCount} developed into active work sessions."
 
         val line2Prefix = "POWER HEALTH: "
         val line2Body = if (data.screenOnDrainRatePctPerHour > 18.0) {
@@ -505,7 +581,10 @@ object AiSummaryGraphicGenerator {
         }
 
         val line3Prefix = "COMMUNICATION LOAD: "
-        val line3Body = "Handled $totalCalls calls total. ${data.incomingMissedCount} incoming call${if (data.incomingMissedCount == 1) "" else "s"} missed and ${data.outgoingUnconnectedCount} outgoing calls remained unanswered."
+        val line3Body = "Handled $totalCalls calls total. " +
+            "${data.incomingMissedCount} incoming " +
+            "call${if (data.incomingMissedCount == 1) "" else "s"} missed and " +
+            "${data.outgoingUnconnectedCount} outgoing calls remained unanswered."
 
         fun drawInsightLine(ly: Float, prefix: String, body: String) {
             textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -525,17 +604,16 @@ object AiSummaryGraphicGenerator {
         return bitmap
     }
 
-    fun saveBitmapToFile(context: Context, bitmap: Bitmap, dateStr: String): File? {
-        return try {
-            val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: context.filesDir
-            val file = File(picturesDir, "FirstLog_Summary_$dateStr.png")
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            }
-            file
-        } catch (_: Exception) {
-            null
+    fun saveBitmapToFile(context: Context, bitmap: Bitmap, dateStr: String): File? = try {
+        val picturesDir =
+            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: context.filesDir
+        val file = File(picturesDir, "FirstLog_Summary_$dateStr.png")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
+        file
+    } catch (_: Exception) {
+        null
     }
 
     fun getShareIntent(context: Context, imageFile: File): Intent {
@@ -547,7 +625,10 @@ object AiSummaryGraphicGenerator {
         return Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_SUBJECT, "FirstLogApp Daily Activity Summary - ${imageFile.name}")
+            putExtra(
+                Intent.EXTRA_SUBJECT,
+                context.getString(R.string.summary_share_subject, imageFile.name)
+            )
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     }

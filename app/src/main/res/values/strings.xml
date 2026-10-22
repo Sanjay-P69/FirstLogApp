@@ -1,5 +1,12 @@
 <resources>
-    <string name="app_name">FirstLog</string>
+    <string name="app_name">Tracewise</string>
+    <string name="notification_listener_label">Tracewise notifications</string>
+    <string name="brand_logo_description">Tracewise logo</string>
+    <string name="logging_notification_title">Tracewise active</string>
+    <string name="notification_listener_explanation">Grant notification listener access to track incoming messages, mark as read, and reply directly from Tracewise.</string>
+    <string name="summary_share_subject">Tracewise daily summary — %1$s</string>
+    <string name="summary_report_title">Tracewise daily activity summary report</string>
+    <string name="local_summary_engine">Summary engine: Tracewise local generator</string>
     <string name="dashboard_title">Your day, at a glance</string>
     <string name="dashboard_subtitle">Understand how you use your phone.</string>
     <string name="daily_summary">Daily summary</string>
@@ -144,4 +151,5 @@
     <string name="histogram_short_five">1–5m</string>
     <string name="histogram_short_long">5m+</string>
     <string name="no_calls_recorded">No calls recorded for this cycle.</string>
+    <string name="notification_reply">Reply</string>
 </resources>

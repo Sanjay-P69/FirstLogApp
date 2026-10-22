@@ -55,6 +55,7 @@ jobs:
       - name: Build debug and release, both unit-test variants, and both lint variants
         run: >-
           bash gradlew :app:assembleDebug :app:assembleRelease
+          :app:assembleDebugAndroidTest
           :app:testDebugUnitTest :app:testReleaseUnitTest
           :app:lintDebug :app:lintRelease --stacktrace
       - name: Print lint errors
