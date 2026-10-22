@@ -9,11 +9,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.Sanjay.firstlogapp.data.local.DataManager
 import com.Sanjay.firstlogapp.ui.components.M3MetricDetailBottomSheet
-import com.Sanjay.firstlogapp.ui.metrics.*
 import com.Sanjay.firstlogapp.ui.model.MetricItem
 import com.Sanjay.firstlogapp.ui.notifications.NotificationDetailDialog
 import com.Sanjay.firstlogapp.ui.summary.AiSummaryDialog
@@ -27,12 +31,12 @@ fun DashboardRoute(
     dataManager: DataManager,
     onNavigateToAppUsage: () -> Unit,
     onRefresh: suspend () -> Unit,
-    thumbnailStyle: String
+    thumbnailStyle: String,
+    onOpenHistory: (String) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selectedMetric by remember { mutableStateOf<MetricItem?>(null) }
-    var detailedMetric by remember { mutableStateOf<MetricItem?>(null) }
     var showNotifications by remember { mutableStateOf(false) }
     var showSummary by remember { mutableStateOf(false) }
     var refreshing by remember { mutableStateOf(false) }
@@ -64,17 +68,8 @@ fun DashboardRoute(
     selectedMetric?.let { metric ->
         M3MetricDetailBottomSheet(metric, rememberModalBottomSheetState(skipPartiallyExpanded = true),
             onDismiss = { selectedMetric = null }, onNavigateToAnalytics = {
-                detailedMetric = metric
+                onOpenHistory(metric.id)
                 selectedMetric = null
             })
-    }
-    detailedMetric?.let { metric ->
-        val dismiss = { detailedMetric = null }
-        when (metric.id) {
-            "battery" -> BatteryDetailDialog(dataManager, dismiss)
-            "unlock" -> UnlockDetailDialog(dataManager, dismiss)
-            "call_in", "call_out" -> CallDetailDialog(context, metric.id == "call_in", metric.title, onDismiss = dismiss)
-            else -> RadioDetailDialog(metric, dataManager, dismiss)
-        }
     }
 }

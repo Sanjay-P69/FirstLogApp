@@ -43,6 +43,7 @@ jobs:
       - name: Kotlin formatting and static analysis
         run: bash gradlew spotlessCheck detekt --stacktrace
       - name: Build debug, unit tests, and lint
+        if: ${{ !cancelled() }}
         run: >-
           bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --stacktrace
       - name: Print lint errors
@@ -62,6 +63,11 @@ jobs:
                       if issue.get('level') == 'error':
                           print(report.name, issue.get('ruleId'), issue.get('message'), issue.get('locations'))
           PYCODE
+      - name: Show formatting patch when checks fail
+        if: failure()
+        run: |
+          bash gradlew spotlessApply --stacktrace || true
+          git diff -- app/src
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
