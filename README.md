@@ -8,6 +8,7 @@ This branch introduces a Material 3 Expressive redesign of the main destinations
 - [Architecture and migration boundaries](docs/ARCHITECTURE.md)
 - [UX, design rules, and open-source references](docs/DESIGN.md)
 - [Contributor and agent standards](AGENTS.md)
+- [CI checks, artifacts, and signed release setup](docs/CI.md)
 
 ## Build and check
 
@@ -15,7 +16,9 @@ Use JDK 21, Android SDK platform 36, and the checked-in Gradle wrapper. Keep the
 
 ```sh
 python3 scripts/check_architecture.py
-bash gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+bash gradlew spotlessCheck detekt
+bash gradlew :app:assembleDebug :app:assembleRelease :app:bundleRelease \
+  :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease
 ```
 
 With a compatible emulator or device:
@@ -24,7 +27,7 @@ With a compatible emulator or device:
 bash gradlew :app:connectedDebugAndroidTest
 ```
 
-Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. The GitHub workflow runs the architecture guard, debug build, unit tests, and lint when repository Actions are available; connected UI tests still require a device job or local device.
+Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. The expanded GitHub workflow checks formatting, static analysis, debug/release builds, unit tests, and lint, plus connected UI tests on API 29 and 35 emulators. Normal CI release artifacts are unsigned. Manual signed packaging requires the environment secrets documented in [CI setup](docs/CI.md).
 
 ## Boundaries
 

@@ -9,3 +9,5 @@ indent_size = 4
 ktlint_code_style = android_studio
 # Compose entry points follow Android's PascalCase convention.
 ktlint_function_naming_ignore_when_annotated_with = Composable
+# Existing source packages contain Sanjay; changing namespace is a separate migration.
+ktlint_standard_package-name = disabled

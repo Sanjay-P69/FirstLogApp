@@ -30,7 +30,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
         with:
-          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
       - name: Install project Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Kotlin formatting and static analysis
@@ -40,6 +40,23 @@ jobs:
           bash gradlew :app:assembleDebug :app:assembleRelease :app:bundleRelease
           :app:testDebugUnitTest :app:testReleaseUnitTest
           :app:lintDebug :app:lintRelease --stacktrace
+      - name: Print lint errors
+        if: failure()
+        run: |
+          python3 - <<'PYCODE'
+          import json
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for report in Path('app/build/reports').glob('lint-results-*.xml'):
+              for issue in ET.parse(report).getroot().findall('issue'):
+                  if issue.get('severity') in ('Error', 'Fatal'):
+                      print(report.name, issue.attrib, [node.attrib for node in issue.findall('location')])
+          for report in Path('app/build/reports').glob('lint-results-*.sarif'):
+              for run in json.loads(report.read_text()).get('runs', []):
+                  for issue in run.get('results', []):
+                      if issue.get('level') == 'error':
+                          print(report.name, issue.get('ruleId'), issue.get('message'), issue.get('locations'))
+          PYCODE
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
@@ -87,6 +104,22 @@ jobs:
           arch: x86_64
           disable-animations: true
           script: bash gradlew :app:connectedDebugAndroidTest --stacktrace
+      - name: Print device test failures
+        if: failure()
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          for report in Path('app/build/outputs/androidTest-results').rglob('*.xml'):
+              try:
+                  root = ET.parse(report).getroot()
+              except ET.ParseError:
+                  continue
+              print(report, root.attrib)
+              for node in root.iter():
+                  if node.tag in ('failure', 'error', 'system-err'):
+                      print(node.attrib, node.text)
+          PYCODE
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

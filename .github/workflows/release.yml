@@ -28,6 +28,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
         with:
           cache-read-only: true
+      - name: Install project Android SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Verify unsigned sources first
         run: >-
           bash gradlew spotlessCheck detekt :app:testReleaseUnitTest

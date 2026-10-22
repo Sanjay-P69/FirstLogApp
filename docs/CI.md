@@ -15,6 +15,10 @@ Gradle's setup action validates the wrapper JAR; the distribution also has a SHA
 pin. Fork PRs cannot write Gradle caches and receive no signing secrets.
 Dependabot proposes weekly Gradle and Actions updates; updates still require review.
 
+AGP 9 defaults to creating unit tests only for the tested build type. We explicitly
+set `android.onlyEnableUnitTestForTheTestedBuildType=false` to retain release tests
+([Android documentation](https://developer.android.com/build/releases/agp-9-0-0-release-notes)).
+
 ## Local commands
 
 ```sh
