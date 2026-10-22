@@ -5,6 +5,7 @@ import android.provider.CallLog
 import com.Sanjay.firstlogapp.R
 import com.Sanjay.firstlogapp.core.formatDurationMillis
 import com.Sanjay.firstlogapp.data.model.MetricHistory
+import com.Sanjay.firstlogapp.data.model.CallRecord
 import com.Sanjay.firstlogapp.ui.charts.ChartPoint
 import com.Sanjay.firstlogapp.ui.charts.ChartStyle
 import java.text.SimpleDateFormat
@@ -45,8 +46,9 @@ internal fun MetricHistory.toUiState(title: String, resources: Resources): Metri
             )
             val charging = HistorySection(text(R.string.charging_sessions),
                 sessions.map { session ->
-                    HistoryRow("${time.format(session.startTime)} – ${time.format(session.endTime)}",
-                        formatDurationMillis(session.durationMs),
+                    val interval = time.format(session.startTime) + " – " +
+                        time.format(session.endTime)
+                    HistoryRow(interval, formatDurationMillis(session.durationMs),
                         "${session.startLevel}% → ${session.endLevel}%")
                 }.ifEmpty { listOf(HistoryRow(text(R.string.no_charging_sessions), "")) },
                 expandable = true)
@@ -56,13 +58,13 @@ internal fun MetricHistory.toUiState(title: String, resources: Resources): Metri
                         record.batteryUsedPct, formatDurationMillis(record.chargeDurationMs)))
                 }, expandable = true)
             }
-            MetricHistoryUiState(title,
-                sections = listOf(HistorySection(text(R.string.cycle_overview), summary), charging) +
-                    archived, plot = plot)
+            val overview = HistorySection(text(R.string.cycle_overview), summary)
+            MetricHistoryUiState(title, sections = listOf(overview, charging) + archived, plot = plot)
         }
         is MetricHistory.Unlock -> {
             val counts = sessionHistogram(sessions.map { it.durationMs })
-            val shortLabels = listOf("0–10s", "10–60s", "1–5m", "5m+")
+            val shortLabels = listOf(R.string.histogram_short_ten, R.string.histogram_short_minute,
+                R.string.histogram_short_five, R.string.histogram_short_long).map(::text)
             val bins = listOf(R.string.histogram_under_ten, R.string.histogram_under_minute,
                 R.string.histogram_under_five, R.string.histogram_over_five)
             val plot = sessions.takeIf { it.isNotEmpty() }?.let {
@@ -83,8 +85,8 @@ internal fun MetricHistory.toUiState(title: String, resources: Resources): Metri
                     text(R.string.unlock_estimate_hint)))
             val recent = HistorySection(text(R.string.recent_sessions),
                 sessions.sortedByDescending { it.timestamp }.map {
-                    HistoryRow(resources.getString(R.string.session_ended, date.format(it.timestamp)),
-                        formatDurationMillis(it.durationMs))
+                    val ended = resources.getString(R.string.session_ended, date.format(it.timestamp))
+                    HistoryRow(ended, formatDurationMillis(it.durationMs))
                 }, expandable = true)
             MetricHistoryUiState(title,
                 sections = listOf(HistorySection(text(R.string.cycle_overview), summary), recent),
@@ -96,7 +98,7 @@ internal fun MetricHistory.toUiState(title: String, resources: Resources): Metri
                     (it.type == CallLog.Calls.OUTGOING_TYPE && it.durationSeconds > 0)
             }
             val missed = records.filter { it !in connected }
-            fun rows(calls: List<com.Sanjay.firstlogapp.data.model.CallRecord>) = calls.map {
+            fun rows(calls: List<CallRecord>) = calls.map {
                 val kind = when (it.type) {
                     CallLog.Calls.MISSED_TYPE -> text(R.string.call_missed)
                     CallLog.Calls.REJECTED_TYPE -> text(R.string.call_rejected)
@@ -115,13 +117,18 @@ internal fun MetricHistory.toUiState(title: String, resources: Resources): Metri
                     resources.getString(R.string.call_count, calls.size),
                     caller.number.takeIf(String::isNotBlank))
             }
+            val connectedMillis = connected.sumOf { it.durationSeconds } * 1_000
             MetricHistoryUiState(title, sections = listOf(
                 HistorySection(text(R.string.cycle_overview), listOf(
                     number(R.string.connected_calls, connected.size),
-                    duration(R.string.connected_duration, connected.sumOf { it.durationSeconds } * 1_000),
+                    duration(R.string.connected_duration, connectedMillis),
                     number(R.string.missed_calls, missed.size))),
-                HistorySection(text(R.string.connected_calls), rows(connected), expandable = true),
-                HistorySection(text(R.string.missed_calls), rows(missed), expandable = true),
+                HistorySection(text(R.string.connected_calls), rows(connected).ifEmpty {
+                    listOf(HistoryRow(text(R.string.no_calls_recorded), ""))
+                }, expandable = true),
+                HistorySection(text(R.string.missed_calls), rows(missed).ifEmpty {
+                    listOf(HistoryRow(text(R.string.no_calls_recorded), ""))
+                }, expandable = true),
                 HistorySection(text(R.string.top_callers), callers, expandable = true)
             ))
         }

@@ -66,56 +66,66 @@ fun MetricHistoryContent(
                 TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
             }
             state.analytics?.let { analytics -> item { AnalyticsChartCard(analytics) } }
-            state.plot?.let { plot ->
-                item {
-                    Card(shape = MaterialTheme.shapes.extraLarge) {
-                        Column(Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(plot.title, style = MaterialTheme.typography.titleMedium)
-                            CompactChart(plot.points, plot.title, axisValue = { value ->
-                                String.format(Locale.getDefault(), if (plot.isPercentage)
-                                    "%.0f%%" else "%.0f", value)
-                            }, style = plot.style, fixedMaximum = plot.maximum)
-                        }
-                    }
-                }
-            }
+            state.plot?.let { plot -> item { HistoryPlotCard(plot) } }
             state.sections.forEachIndexed { sectionIndex, section ->
                 item(key = "heading-$sectionIndex") {
-                    if (section.expandable) {
-                        val open = expanded == section.title
-                        val status = stringResource(if (open) R.string.expanded else R.string.collapsed)
-                        Card(onClick = { expanded = if (open) null else section.title },
-                            modifier = Modifier.fillMaxWidth().semantics {
-                                stateDescription = status
-                            }) {
-                            ListItem(headlineContent = { Text(section.title) }, trailingContent = {
-                                Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                                    contentDescription = null)
-                            })
-                        }
-                    } else Text(section.title, style = MaterialTheme.typography.titleMedium)
+                    HistoryHeading(section, expanded == section.title) {
+                        expanded = if (expanded == section.title) null else section.title
+                    }
                 }
                 if (!section.expandable || expanded == section.title) {
-                    items(section.rows.withIndex().toList(), key = { "row-$sectionIndex-${it.index}" }) {
-                        (_, row) ->
-                        ListItem(headlineContent = { Text(row.title) },
-                            supportingContent = {
-                                Column {
-                                    Text(row.value, style = MaterialTheme.typography.bodyLarge)
-                                    row.supporting?.let { Text(it) }
-                                }
-                            }, trailingContent = {
-                                row.dialNumber?.let { number ->
-                                    IconButton(onClick = { onDial(number) }) {
-                                        Icon(Icons.Outlined.Call,
-                                            contentDescription = stringResource(R.string.dial_number))
-                                    }
-                                }
-                            })
+                    items(section.rows.withIndex().toList(),
+                        key = { "row-$sectionIndex-${it.index}" }) { (_, row) ->
+                        HistoryValueRow(row, onDial)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun HistoryHeading(section: HistorySection, open: Boolean, onToggle: () -> Unit) {
+    if (!section.expandable) {
+        Text(section.title, style = MaterialTheme.typography.titleMedium)
+        return
+    }
+    val status = stringResource(if (open) R.string.expanded else R.string.collapsed)
+    Card(onClick = onToggle, modifier = Modifier.fillMaxWidth().semantics {
+        stateDescription = status
+    }) {
+        ListItem(headlineContent = { Text(section.title) }, trailingContent = {
+            Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                contentDescription = null)
+        })
+    }
+}
+
+@Composable
+private fun HistoryValueRow(row: HistoryRow, onDial: (String) -> Unit) {
+    ListItem(headlineContent = { Text(row.title) }, supportingContent = {
+        Column {
+            Text(row.value, style = MaterialTheme.typography.bodyLarge)
+            row.supporting?.let { Text(it) }
+        }
+    }, trailingContent = {
+        row.dialNumber?.let { number ->
+            IconButton(onClick = { onDial(number) }) {
+                Icon(Icons.Outlined.Call,
+                    contentDescription = stringResource(R.string.dial_number))
+            }
+        }
+    })
+}
+
+@Composable
+private fun HistoryPlotCard(plot: HistoryPlot) {
+    Card(shape = MaterialTheme.shapes.extraLarge) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(plot.title, style = MaterialTheme.typography.titleMedium)
+            CompactChart(plot.points, plot.title, axisValue = { value ->
+                String.format(Locale.getDefault(), if (plot.isPercentage) "%.0f%%" else "%.0f", value)
+            }, style = plot.style, fixedMaximum = plot.maximum)
         }
     }
 }

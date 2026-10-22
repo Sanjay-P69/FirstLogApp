@@ -5,8 +5,8 @@ import com.Sanjay.firstlogapp.data.device.CallHistoryReader
 import com.Sanjay.firstlogapp.data.local.DataManager
 import com.Sanjay.firstlogapp.data.model.AnalyticsSeries
 import com.Sanjay.firstlogapp.data.model.MetricTimeSnapshot
-import org.json.JSONArray
 import java.util.TimeZone
+import org.json.JSONArray
 
 interface AnalyticsRepository {
     fun readChart(metricId: String, period: String): AnalyticsSeries
@@ -24,8 +24,11 @@ class StoredAnalyticsRepository(
         if (metricId == "call_in" || metricId == "call_out") {
             val windows = timeWindows(now, period, zone)
             val records = calls.read(windows.first().first, windows.last().second).filter {
-                if (metricId == "call_in") it.type == CallLog.Calls.INCOMING_TYPE
-                else it.type == CallLog.Calls.OUTGOING_TYPE
+                if (metricId == "call_in") {
+                    it.type == CallLog.Calls.INCOMING_TYPE
+                } else {
+                    it.type == CallLog.Calls.OUTGOING_TYPE
+                }
             }
             return AnalyticsSeries(callBuckets(records, now, period, zone), zone.id)
         }
@@ -50,7 +53,15 @@ class StoredAnalyticsRepository(
             daily[cycle] = (prefs["today_$metricId"] as? Long ?: 0L) +
                 if (start != null) (now - start) else 0L
         }
-        return AnalyticsSeries(metricBuckets(MetricTimeSnapshot(hourly, daily, start),
-            now, period, zone), zone.id, usesTrackingCycles = period != "Day")
+        return AnalyticsSeries(
+            metricBuckets(
+                MetricTimeSnapshot(hourly, daily, start),
+                now,
+                period,
+                zone
+            ),
+            zone.id,
+            usesTrackingCycles = period != "Day"
+        )
     }
 }

@@ -21,11 +21,14 @@ internal fun timeWindows(now: Long, period: String, zone: TimeZone): List<Pair<L
         if (period == "Year") set(Calendar.MONTH, Calendar.JANUARY)
     }
     val end = (calendar.clone() as Calendar).apply {
-        add(when (period) {
-            "Day" -> Calendar.DAY_OF_MONTH
-            "Month" -> Calendar.MONTH
-            else -> Calendar.YEAR
-        }, 1)
+        add(
+            when (period) {
+                "Day" -> Calendar.DAY_OF_MONTH
+                "Month" -> Calendar.MONTH
+                else -> Calendar.YEAR
+            },
+            1
+        )
     }.timeInMillis
     val step = when (period) {
         "Day" -> Calendar.HOUR_OF_DAY
@@ -58,15 +61,20 @@ internal fun metricBuckets(
         if (start > now) return@mapIndexed AnalyticsBucket(start, end, null, BucketQuality.FUTURE)
         val recorded = when (period) {
             // Legacy storage merges repeated DST hours. Do not duplicate their combined value.
-            "Day" -> if (hourKeys.count { it == hourKeys[index] } > 1) null
-                else snapshot.hourly[hourKeys[index]]
+            "Day" -> if (hourKeys.count { it == hourKeys[index] } > 1) {
+                null
+            } else {
+                snapshot.hourly[hourKeys[index]]
+            }
             "Month" -> snapshot.daily[date.format(start)]
             else -> snapshot.daily.filterKeys { it.startsWith(month.format(start)) }
                 .values.takeIf { it.isNotEmpty() }?.sum()
         }
         val live = if (period == "Day" && snapshot.liveStartMillis != null) {
             (minOf(end, now) - maxOf(start, snapshot.liveStartMillis)).coerceAtLeast(0)
-        } else 0L
+        } else {
+            0L
+        }
         val value = if (recorded != null || live > 0L) (recorded ?: 0L) + live else null
         val quality = when {
             value == null -> BucketQuality.NO_RECORD
@@ -90,7 +98,11 @@ internal fun callBuckets(
             val callEnd = call.timestamp + call.durationSeconds.coerceAtLeast(0) * 1_000L
             (minOf(end, now, callEnd) - maxOf(start, call.timestamp)).coerceAtLeast(0)
         }
-        AnalyticsBucket(start, end, duration,
-            if (end > now) BucketQuality.PARTIAL else BucketQuality.RECORDED)
+        AnalyticsBucket(
+            start,
+            end,
+            duration,
+            if (end > now) BucketQuality.PARTIAL else BucketQuality.RECORDED
+        )
     }
 }

@@ -20,8 +20,12 @@ class TimeBucketAggregationTest {
         val readings = (0..23).associate { hour ->
             "2026-10-22_$hour" to if (hour in 9..16) 3_600_000L else 0L
         }
-        val result = metricBuckets(MetricTimeSnapshot(readings, emptyMap()),
-            instant("2026-10-22 23:59"), "Day", utc)
+        val result = metricBuckets(
+            MetricTimeSnapshot(readings, emptyMap()),
+            instant("2026-10-22 23:59"),
+            "Day",
+            utc
+        )
         assertEquals(24, result.size)
         assertEquals(8 * 3_600_000L, result.sumOf { it.durationMillis ?: 0L })
         assertEquals(0L, result.first().durationMillis)
@@ -30,8 +34,12 @@ class TimeBucketAggregationTest {
 
     @Test
     fun missingAndFutureHoursAreNotRecordedZeroes() {
-        val result = metricBuckets(MetricTimeSnapshot(mapOf("2026-10-22_8" to 0L), emptyMap()),
-            instant("2026-10-22 12:30"), "Day", utc)
+        val result = metricBuckets(
+            MetricTimeSnapshot(mapOf("2026-10-22_8" to 0L), emptyMap()),
+            instant("2026-10-22 12:30"),
+            "Day",
+            utc
+        )
         assertEquals(BucketQuality.NO_RECORD, result[7].quality)
         assertNull(result[7].durationMillis)
         assertEquals(0L, result[8].durationMillis)
@@ -70,8 +78,15 @@ class TimeBucketAggregationTest {
         val zone = TimeZone.getTimeZone("America/New_York")
         assertEquals(23, timeWindows(instant("2026-03-08 12:00", zone), "Day", zone).size)
         val now = instant("2026-11-01 12:00", zone)
-        val result = metricBuckets(MetricTimeSnapshot(mapOf("2026-11-01_1" to 3_600_000L),
-            emptyMap()), now, "Day", zone)
+        val result = metricBuckets(
+            MetricTimeSnapshot(
+                mapOf("2026-11-01_1" to 3_600_000L),
+                emptyMap()
+            ),
+            now,
+            "Day",
+            zone
+        )
         assertEquals(25, result.size)
         assertTrue(result.all { it.durationMillis == null })
     }

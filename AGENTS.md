@@ -4,7 +4,7 @@ Read `docs/ENGINEERING_REVIEW.md`, `docs/ARCHITECTURE.md`, and `docs/DESIGN.md` 
 
 For UI work, also read `docs/UI_REFERENCE_REVIEW.md`. It records the user's ADNS and Essentials references, inspected source revisions/screenshots, and design work that remains unfinished. Do not claim those patterns are implemented merely because they are documented.
 
-For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visual encoding from the user question, units, aggregation, coverage, and actual distribution. The current progress-row UI is interim and must not be treated as a universal chart standard.
+For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visual encoding from the user question, units, aggregation, coverage, and actual distribution. Keep all selected time buckets in one compact plot; do not reintroduce a vertical row per hour/day/month. Axis label thinning must not remove observations.
 
 ## Dependency direction
 
@@ -13,7 +13,7 @@ For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visu
 - Repositories own platform queries and persistence. Inject an interface into ViewModels; use the application context in long-lived objects.
 - ViewModels expose immutable `StateFlow<UiState>` and accept user actions. Collect with `collectAsStateWithLifecycle`. Use `SharingStarted.WhileSubscribed` for screen polling; replace polling with observable storage when that migration is implemented.
 - `*Content.kt` files only render supplied state and emit actions. No `DataManager`, `Context`, services, launchers, repositories, ViewModels, effects, file operations, or permission checks. Local expansion/focus state is fine.
-- `*Route` / integration files own Android launchers and translate actions to navigation or repository calls. Existing notification, metric-history, and summary dialogs are transitional adapters, not examples to copy.
+- `*Route` / integration files own Android launchers and translate actions to navigation or repository calls. Existing notification and summary dialogs are transitional adapters, not examples to copy. Metric histories now have a full-screen Content/route/repository boundary; preserve it.
 - Keep this app in one Gradle module until real build-time or ownership needs justify more modules. Do not add Hilt, a use-case class for every getter, or generic base ViewModels as ceremony.
 
 ## Kotlin and state
@@ -63,7 +63,7 @@ For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visu
 
 ## Scope of current enforcement
 
-`scripts/check_architecture.py` enforces data/service → UI separation, pure Content files, theme tokens in Content, and a small activity. It does not prove Kotlin compilation or full clean architecture. Notification/history/report adapters and `DataManager` remain migration targets; do not add new debt to them.
+`scripts/check_architecture.py` enforces data/service → UI separation, pure Content files, theme tokens in Content, and a small activity. It does not prove Kotlin compilation or full clean architecture. Notification/report adapters and `DataManager` remain migration targets; do not add new debt to them.
 
 ## CI and releases
 
@@ -71,3 +71,7 @@ For analytics or charts, also read `docs/DATA_VISUALIZATION.md`. Choose the visu
 - Use `spotlessApply` before committing touched Kotlin sources. Do not advance the formatting baseline to hide failures.
 - Pin Actions to verified commit SHAs and retain least-privilege permissions. Never expose signing secrets to pull-request jobs or use `pull_request_target` to build untrusted code.
 - Keep release keys out of Git and caches. Release APK packaging runs on merges/pushes to main and manual dispatch; signing uses the release environment secrets when configured. Publication and signing-key rotation require explicit authorization.
+
+## Future agentic analytics
+
+Read `docs/AGENT_ANALYTICS_ARCHITECTURE.md` before database or assistant work. The intended SQLite/Room store must serve charts and conversation with the same typed metrics, units, cycles, and coverage. Preserve legacy data through tested migrations. An agent queries approved analytics views through a bounded read-only service; it must not acquire the monitoring writer connection or manufacture missing historical events. Do not claim the chatbot or SQLite migration is implemented by a UI change.

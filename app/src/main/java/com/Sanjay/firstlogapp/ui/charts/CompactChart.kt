@@ -24,13 +24,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.Sanjay.firstlogapp.R
-import androidx.compose.ui.res.stringResource
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -70,8 +70,12 @@ fun CompactChart(
                             detectTapGestures { offset ->
                                 val fraction = offset.x / size.width
                                 selected = points.indices.minBy { candidate ->
-                                    abs((points[candidate].position ?:
-                                        ((candidate + 0.5f) / points.size)) - fraction)
+                                    abs(
+                                        (
+                                            points[candidate].position
+                                                ?: ((candidate + 0.5f) / points.size)
+                                            ) - fraction
+                                    )
                                 }
                             }
                         }
@@ -90,15 +94,24 @@ fun CompactChart(
                                 val height = (value / maximum).coerceIn(0.0, 1.0).toFloat() *
                                     plotHeight
                                 drawRect(
-                                    if (pointIndex == index) colors.primary else colors.primaryContainer,
+                                    if (pointIndex ==
+                                        index
+                                    ) {
+                                        colors.primary
+                                    } else {
+                                        colors.primaryContainer
+                                    },
                                     Offset(x + slot * 0.15f, plotHeight - height),
                                     Size(slot * 0.7f, height)
                                 )
                             } else if (point.state == ChartPointState.NO_RECORD ||
-                                point.state == ChartPointState.FUTURE) {
-                                drawLine(colors.outlineVariant,
+                                point.state == ChartPointState.FUTURE
+                            ) {
+                                drawLine(
+                                    colors.outlineVariant,
                                     Offset(x + slot * 0.3f, plotHeight + 3.dp.toPx()),
-                                    Offset(x + slot * 0.7f, plotHeight + 3.dp.toPx()))
+                                    Offset(x + slot * 0.7f, plotHeight + 3.dp.toPx())
+                                )
                             }
                         }
                     } else {
@@ -114,23 +127,37 @@ fun CompactChart(
                                 val y = plotHeight * (1 - value / maximum).toFloat()
                                 if (continuing) path.lineTo(x, y) else path.moveTo(x, y)
                                 continuing = true
-                                drawCircle(colors.primary, if (pointIndex == index) 5.dp.toPx()
-                                    else 2.dp.toPx(), Offset(x, y))
+                                drawCircle(
+                                    colors.primary,
+                                    if (pointIndex == index) {
+                                        5.dp.toPx()
+                                    } else {
+                                        2.dp.toPx()
+                                    },
+                                    Offset(x, y)
+                                )
                             }
                         }
-                        drawPath(path, colors.primary,
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+                        drawPath(
+                            path,
+                            colors.primary,
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx())
+                        )
                     }
                 }
                 BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 28.dp)) {
                     tickIndices(points.size).forEach { tick ->
                         val fraction = points[tick].position ?: ((tick + 0.5f) / points.size)
-                        val x = (maxWidth * fraction - 22.dp).coerceIn(0.dp,
-                            (maxWidth - 44.dp).coerceAtLeast(0.dp))
-                        Text(points[tick].label,
+                        val x = (maxWidth * fraction - 22.dp).coerceIn(
+                            0.dp,
+                            (maxWidth - 44.dp).coerceAtLeast(0.dp)
+                        )
+                        Text(
+                            points[tick].label,
                             Modifier.offset(x = x).width(44.dp),
                             style = MaterialTheme.typography.labelSmall,
-                            textAlign = TextAlign.Center)
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }

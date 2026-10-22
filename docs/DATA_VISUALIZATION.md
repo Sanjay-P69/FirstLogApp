@@ -1,8 +1,7 @@
 # Choose charts from the data and the user question
 
 The chart type follows the question, measurement type, sampling/aggregation,
-coverage, and distribution. Material styling comes afterward. The current Trends
-progress rows are an interim view, not a rule that all analytics must use indicators.
+coverage, and distribution. Material styling comes afterward. Trends now uses a compact full-range plot instead of one vertical progress row per bucket.
 
 This source audit covers the current models/storage. No real user's dataset was
 provided or profiled, so skew, outliers, typical ranges, and historical completeness
@@ -115,5 +114,4 @@ they are a future option, not evidence that multiweek history currently exists.
    Use previews for tiny/empty/large/skewed data, long labels, light/dark, and large
    text. Connected tests remain local; do not add emulator CI.
 
-This review changes documentation and agent rules. It does not claim the typed data
-contract, richer charts, or collection/retention fixes are already implemented.
+The current implementation includes typed timestamped analytics buckets, compact duration bars, recent battery-level lines, retained-session histograms, future/missing states, and exact-value selection. It leaves collection/retention limits intact. The legacy preference schema still cannot prove complete monitoring coverage or distinguish repeated DST-hour readings; those readings are kept unknown rather than duplicated. The SQLite/Room migration and coverage instrumentation remain separate work.

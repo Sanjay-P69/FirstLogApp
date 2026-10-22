@@ -9,20 +9,34 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-internal fun AnalyticsSeries.toUiState(period: String, locale: Locale = Locale.getDefault()):
-    AnalyticsUiState {
+internal fun AnalyticsSeries.toUiState(
+    period: String,
+    locale: Locale = Locale.getDefault()
+): AnalyticsUiState {
     val zone = TimeZone.getTimeZone(timezoneId)
-    val shortFormat = SimpleDateFormat(when (period) {
-        "Day" -> "HH"
-        "Month" -> "d"
-        else -> "MMM"
-    }, locale).apply { timeZone = zone }
-    val detailFormat = SimpleDateFormat(if (period == "Day") "EEE d MMM · HH:mm z"
-        else if (period == "Month") "EEE d MMM yyyy" else "MMMM yyyy", locale)
+    val shortFormat = SimpleDateFormat(
+        when (period) {
+            "Day" -> "HH"
+            "Month" -> "d"
+            else -> "MMM"
+        },
+        locale
+    ).apply { timeZone = zone }
+    val detailFormat = SimpleDateFormat(
+        if (period == "Day") {
+            "EEE d MMM · HH:mm z"
+        } else if (period == "Month") {
+            "EEE d MMM yyyy"
+        } else {
+            "MMMM yyyy"
+        },
+        locale
+    )
         .apply { timeZone = zone }
     return AnalyticsUiState(
         points = buckets.map { bucket ->
-            ChartPoint(shortFormat.format(bucket.startMillis),
+            ChartPoint(
+                shortFormat.format(bucket.startMillis),
                 detailFormat.format(bucket.startMillis),
                 bucket.durationMillis?.div(3_600_000.0),
                 bucket.durationMillis?.let(::formatDurationMillis).orEmpty(),
@@ -31,7 +45,8 @@ internal fun AnalyticsSeries.toUiState(period: String, locale: Locale = Locale.g
                     BucketQuality.PARTIAL -> ChartPointState.PARTIAL
                     BucketQuality.NO_RECORD -> ChartPointState.NO_RECORD
                     BucketQuality.FUTURE -> ChartPointState.FUTURE
-                })
+                }
+            )
         },
         totalMillis = buckets.sumOf { it.durationMillis ?: 0L },
         usesTrackingCycles = usesTrackingCycles

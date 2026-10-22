@@ -40,13 +40,18 @@ fun DashboardRoute(
     var showNotifications by remember { mutableStateOf(false) }
     var showSummary by remember { mutableStateOf(false) }
     var refreshing by remember { mutableStateOf(false) }
-    val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        scope.launch { onRefresh() }
-    }
+    val permissions =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            scope.launch { onRefresh() }
+        }
     PullToRefreshBox(isRefreshing = refreshing, onRefresh = {
         scope.launch {
             refreshing = true
-            try { onRefresh() } finally { refreshing = false }
+            try {
+                onRefresh()
+            } finally {
+                refreshing = false
+            }
         }
     }) {
         DashboardContent(state, onAction = { action ->
@@ -56,20 +61,39 @@ fun DashboardRoute(
                 DashboardAction.OpenSummary -> showSummary = true
                 DashboardAction.OpenApps -> onNavigateToAppUsage()
                 DashboardAction.OpenNotifications -> showNotifications = true
-                DashboardAction.GrantCalls -> permissions.launch(arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_CONTACTS))
-                DashboardAction.GrantBluetooth -> if (Build.VERSION.SDK_INT >= 31) permissions.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
-                DashboardAction.GrantUsage -> context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-                DashboardAction.GrantNotifications -> context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                DashboardAction.GrantCalls -> permissions.launch(
+                    arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_CONTACTS)
+                )
+                DashboardAction.GrantBluetooth -> if (Build.VERSION.SDK_INT >=
+                    31
+                ) {
+                    permissions.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
+                }
+                DashboardAction.GrantUsage -> context.startActivity(
+                    Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                )
+                DashboardAction.GrantNotifications -> context.startActivity(
+                    Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                )
             }
         })
     }
     if (showSummary) AiSummaryDialog(dataManager) { showSummary = false }
-    if (showNotifications) NotificationDetailDialog(context, thumbnailStyle) { showNotifications = false }
+    if (showNotifications) {
+        NotificationDetailDialog(context, thumbnailStyle) {
+            showNotifications =
+                false
+        }
+    }
     selectedMetric?.let { metric ->
-        M3MetricDetailBottomSheet(metric, rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            onDismiss = { selectedMetric = null }, onNavigateToAnalytics = {
+        M3MetricDetailBottomSheet(
+            metric,
+            rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            onDismiss = { selectedMetric = null },
+            onNavigateToAnalytics = {
                 onOpenHistory(metric.id)
                 selectedMetric = null
-            })
+            }
+        )
     }
 }

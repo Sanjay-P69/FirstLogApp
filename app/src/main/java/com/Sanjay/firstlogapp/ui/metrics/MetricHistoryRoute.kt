@@ -31,15 +31,23 @@ fun MetricHistoryRoute(metric: MetricItem, dataManager: DataManager, onBack: () 
     }
     val analytics = remember(dataManager, reader) { StoredAnalyticsRepository(dataManager, reader) }
     var retry by remember { mutableIntStateOf(0) }
-    val state by produceState(MetricHistoryUiState(metric.title, isLoading = true), metric.id, retry) {
+    val state by produceState(
+        MetricHistoryUiState(metric.title, isLoading = true),
+        metric.id,
+        retry
+    ) {
         value = MetricHistoryUiState(metric.title, isLoading = true)
         value = try {
             withContext(Dispatchers.IO) {
                 val raw = repository.read(metric.id)
                 val mapped = raw.toUiState(metric.title, resources)
                 if (raw is MetricHistory.Radio) {
-                    mapped.copy(analytics = analytics.readChart(metric.id, "Month").toUiState("Month"))
-                } else mapped
+                    mapped.copy(
+                        analytics = analytics.readChart(metric.id, "Month").toUiState("Month")
+                    )
+                } else {
+                    mapped
+                }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled

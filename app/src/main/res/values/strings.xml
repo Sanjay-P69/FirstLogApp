@@ -139,4 +139,9 @@
     <string name="unknown_caller">Unknown caller</string>
     <string name="call_count">%1$d calls</string>
     <string name="top_callers">Callers by recorded duration</string>
+    <string name="histogram_short_ten">0–10s</string>
+    <string name="histogram_short_minute">10–60s</string>
+    <string name="histogram_short_five">1–5m</string>
+    <string name="histogram_short_long">5m+</string>
+    <string name="no_calls_recorded">No calls recorded for this cycle.</string>
 </resources>

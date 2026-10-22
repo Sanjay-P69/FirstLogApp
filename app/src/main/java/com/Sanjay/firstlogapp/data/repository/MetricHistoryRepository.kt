@@ -19,7 +19,8 @@ class StoredMetricHistoryRepository(
     override fun read(metricId: String): MetricHistory = when (metricId) {
         "battery" -> {
             val now = System.currentTimeMillis()
-            val raw = JSONArray(storage.getPrefs().getString("battery_hourly_log", "[]") ?: "[]")
+            val rawLog = storage.getPrefs().getString("battery_hourly_log", "[]") ?: "[]"
+            val raw = JSONArray(rawLog)
             val samples = (0 until raw.length()).map { index ->
                 val sample = raw.getJSONObject(index)
                 BatteryLevelSample(sample.getLong("t"), sample.getInt("l"))

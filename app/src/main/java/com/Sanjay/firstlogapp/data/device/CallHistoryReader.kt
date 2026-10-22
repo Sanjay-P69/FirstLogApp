@@ -13,10 +13,16 @@ class CallHistoryReader(context: Context) {
         val duration = CallLog.Calls.DURATION
         val selection = "$date < ? AND ($date >= ? OR ($date + $duration * 1000) > ?)"
         val args = arrayOf(end.toString(), start.toString(), start.toString())
-        val columns = arrayOf(CallLog.Calls.CACHED_NAME, CallLog.Calls.NUMBER, date,
-            duration, CallLog.Calls.TYPE)
-        val cursor = resolver.query(CallLog.Calls.CONTENT_URI, columns, selection, args, "$date DESC")
-            ?: error("Call history provider unavailable")
+        val columns = arrayOf(
+            CallLog.Calls.CACHED_NAME,
+            CallLog.Calls.NUMBER,
+            date,
+            duration,
+            CallLog.Calls.TYPE
+        )
+        val cursor =
+            resolver.query(CallLog.Calls.CONTENT_URI, columns, selection, args, "$date DESC")
+                ?: error("Call history provider unavailable")
         return cursor.use {
             val nameIndex = it.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
             val numberIndex = it.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
@@ -26,8 +32,15 @@ class CallHistoryReader(context: Context) {
             buildList {
                 while (it.moveToNext()) {
                     val number = it.getString(numberIndex).orEmpty()
-                    add(CallRecord(it.getString(nameIndex).orEmpty().ifBlank { number }, number,
-                        it.getLong(dateIndex), it.getLong(durationIndex), it.getInt(typeIndex)))
+                    add(
+                        CallRecord(
+                            it.getString(nameIndex).orEmpty().ifBlank { number },
+                            number,
+                            it.getLong(dateIndex),
+                            it.getLong(durationIndex),
+                            it.getInt(typeIndex)
+                        )
+                    )
                 }
             }
         }

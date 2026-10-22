@@ -25,14 +25,14 @@ flowchart TD
 - `data/device` owns device and provider helpers, `data/local` owns the existing persistence adapter, and `data/model` holds activity records. These packages do not depend on Compose.
 - `AndroidDashboardRepository` reads raw snapshots off the UI thread. `DashboardViewModel` owns refresh/error state and maps measurements to presentation state. `DashboardContent` sees neither the repository nor a context.
 - The repository is injected through a ViewModel factory. No DI framework is needed for this size of app.
-- `AnalyticsScreen` is a small integration adapter using a repository and background queries; `AnalyticsContent` renders the result. Query identity is metric + period, so a selection change cancels the previous effect.
+- `AnalyticsScreen` reads typed timestamped `AnalyticsSeries` through a repository on IO; a mapper formats chart points. `AnalyticsContent` renders a compact full-range chart. Query identity is metric + period, so selection changes cancel previous reads. Hourly queries do not invoke the old reconciliation that assigns unallocated duration to the current hour.
 - `SettingsScreen` owns Android account/document/settings launchers and dispatches file work to IO. `SettingsContent` renders state and emits actions. A dedicated settings repository and ViewModel are the next boundary improvement; settings state currently lives in this adapter.
 - `AppUsageContent` uses the same supplied app rows as the dashboard; it performs no second platform query.
 - Shared formatting lives in `core`, theme and reusable Material controls in `ui/theme` and `ui/components`, and screens are grouped by feature.
 
 ## Intentional compatibility adapters
 
-The preference key names, installed application ID, and Android service names remain unchanged. Existing metric histories, notification details/replies, and summary/report exports remain reachable through adapters. Those older dialogs still mix UI and platform access. They must migrate to feature state and repositories before the whole UI can be described as independent of services.
+The preference key names, installed application ID, and Android service names remain unchanged. Metric quick views use native Material sheets, and extended histories now have a full-screen destination with typed repository results, IO reads, and rendering-only Content. Battery samples use a recent line plot, unlock sessions use a labelled retained-sample histogram, and radio history shares the compact chart. Notification details/replies and summary/report exports remain legacy adapters with platform access; those still need migration.
 
 This is a package and presentation boundary refactor, not a Room/DataStore migration. `DataManager` getters can still trigger rollover, and separate instances still synchronize inadequately. Removing activity sensor callbacks reduces duplicate writers but does not make the underlying storage transactional.
 
@@ -48,3 +48,7 @@ This is a package and presentation boundary refactor, not a Room/DataStore migra
 ## Checkable invariants
 
 `python3 scripts/check_architecture.py` prevents data/services from importing Compose or UI, prohibits platform work in Content files, and prevents device monitoring from returning to the activity. This is a narrow dependency guard, not a substitute for compilation, lint, or runtime testing.
+
+## Conversational analytics direction
+
+The intended agentic chat will query SQLite through a bounded read-only analytics service, sharing metric definitions and repositories with charts. See [the database and agent architecture](AGENT_ANALYTICS_ARCHITECTURE.md) for proposed facts, coverage, migration sequencing, and query boundaries. SQLite/Room and the chatbot are not implemented by this UI change.

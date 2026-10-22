@@ -10,19 +10,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.Sanjay.firstlogapp.ui.components.M3NavigationRail
 import com.Sanjay.firstlogapp.data.local.DataManager
 import com.Sanjay.firstlogapp.ui.analytics.AnalyticsScreen
 import com.Sanjay.firstlogapp.ui.apps.AppUsageContent
 import com.Sanjay.firstlogapp.ui.components.M3BottomNavigationBar
+import com.Sanjay.firstlogapp.ui.components.M3NavigationRail
 import com.Sanjay.firstlogapp.ui.dashboard.DashboardRoute
 import com.Sanjay.firstlogapp.ui.dashboard.DashboardUiState
-import com.Sanjay.firstlogapp.ui.settings.SettingsScreen
 import com.Sanjay.firstlogapp.ui.metrics.MetricHistoryRoute
+import com.Sanjay.firstlogapp.ui.settings.SettingsScreen
 
 /** Root Android adapters; feature Content composables only take state and actions. */
 @Composable
@@ -39,8 +39,10 @@ fun MainNavigationHost(
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showApps by rememberSaveable { mutableStateOf(false) }
     var historyId by rememberSaveable { mutableStateOf<String?>(null) }
-    val historyMetric = (listOf(state.screen, state.battery, state.unlocks) +
-        state.connections + state.calls).firstOrNull { it.id == historyId }
+    val historyMetric = (
+        listOf(state.screen, state.battery, state.unlocks) +
+            state.connections + state.calls
+        ).firstOrNull { it.id == historyId }
     BackHandler(enabled = historyId != null || showApps || selectedTab != 0) {
         if (historyId != null) {
             historyId = null
@@ -62,12 +64,22 @@ fun MainNavigationHost(
                     if (expanded) M3NavigationRail(selectedTab, { selectedTab = it })
                     Box(Modifier.weight(1f)) {
                         when (selectedTab) {
-                            0 -> DashboardRoute(state, dataManager, { showApps = true }, onRefresh,
-                                currentThumbnailStyle, onOpenHistory = { historyId = it })
+                            0 -> DashboardRoute(
+                                state,
+                                dataManager,
+                                { showApps = true },
+                                onRefresh,
+                                currentThumbnailStyle,
+                                onOpenHistory = { historyId = it }
+                            )
                             1 -> AnalyticsScreen(dataManager)
                             2 -> SettingsScreen(
-                                dataManager, currentThemeMode, onThemeChange,
-                                currentThumbnailStyle, onThumbnailStyleChange, onForceResetToday
+                                dataManager,
+                                currentThemeMode,
+                                onThemeChange,
+                                currentThumbnailStyle,
+                                onThumbnailStyleChange,
+                                onForceResetToday
                             )
                         }
                     }
