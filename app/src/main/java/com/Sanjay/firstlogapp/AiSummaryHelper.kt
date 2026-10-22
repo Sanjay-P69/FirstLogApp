@@ -2,10 +2,7 @@ package com.Sanjay.firstlogapp
 
 import android.content.Context
 import android.os.Environment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
+import com.sanjay.tracewise.R
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -15,6 +12,10 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class DailyActivitySummaryData(
     val dateStr: String,
@@ -54,7 +55,8 @@ data class DailyActivitySummaryData(
     val outgoingConnectedDurSec: Long,
     val outgoingUnconnectedCount: Int,
     val outgoingUnconnectedDetails: List<String>,
-    val topApps: List<Pair<String, Long>> // appName to timeMs
+    // App name to time in milliseconds.
+    val topApps: List<Pair<String, Long>>
 )
 
 object AiSummaryHelper {
@@ -67,7 +69,7 @@ object AiSummaryHelper {
         val apiKey = geminiApiKey?.trim() ?: ""
         if (apiKey.isNotEmpty()) {
             try {
-                val aiText = callGeminiApi(data, apiKey)
+                val aiText = callGeminiApi(context, data, apiKey)
                 if (aiText.isNotBlank()) {
                     return@withContext aiText
                 }
@@ -75,12 +77,17 @@ object AiSummaryHelper {
                 // Fall back to built-in generator
             }
         }
-        return@withContext generateLocalSummary(data)
+        return@withContext generateLocalSummary(context, data)
     }
 
-    private fun callGeminiApi(data: DailyActivitySummaryData, apiKey: String): String {
-        val prompt = buildPromptForGemini(data)
-        val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+    private fun callGeminiApi(
+        context: Context,
+        data: DailyActivitySummaryData,
+        apiKey: String
+    ): String {
+        val prompt = buildPromptForGemini(context, data)
+        val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
+            "gemini-1.5-flash:generateContent?key=$apiKey"
         val url = URL(endpoint)
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
@@ -92,11 +99,16 @@ object AiSummaryHelper {
         val requestBody = JSONObject().apply {
             val contentsArray = JSONArray().apply {
                 val partObj = JSONObject().apply {
-                    put("parts", JSONArray().apply {
-                        put(JSONObject().apply {
-                            put("text", prompt)
-                        })
-                    })
+                    put(
+                        "parts",
+                        JSONArray().apply {
+                            put(
+                                JSONObject().apply {
+                                    put("text", prompt)
+                                }
+                            )
+                        }
+                    )
                 }
                 put(partObj)
             }
@@ -127,36 +139,73 @@ object AiSummaryHelper {
         return ""
     }
 
-    private fun buildPromptForGemini(data: DailyActivitySummaryData): String {
-        return """
-You are FirstLogApp's AI Activity Analyst.
+    private fun buildPromptForGemini(context: Context, data: DailyActivitySummaryData): String = """
+You are ${context.getString(R.string.app_name)}'s AI Activity Analyst.
 Generate an executive daily activity summary report for the user based strictly on the tracked metrics below.
 You MUST format the output according to the exact structure specified below. Include clear numbers, durations, call breakdown (connected vs missed/unconnected), connectivity, battery drain rate, and provide an insightful 2-3 paragraph 'AI Executive Insights & Digital Wellness' analysis at the end.
 
 METRICS FOR ${data.dateStr}:
 1. Calls:
-- Incoming: ${data.incomingTotalCount} total, ${data.incomingConnectedCount} connected (${formatDur(data.incomingConnectedDurSec * 1000L)}), ${data.incomingMissedCount} missed/rejected. Missed details: ${data.incomingMissedDetails.joinToString(", ").ifBlank { "None" }}
-- Outgoing: ${data.outgoingTotalCount} total, ${data.outgoingConnectedCount} connected (${formatDur(data.outgoingConnectedDurSec * 1000L)}), ${data.outgoingUnconnectedCount} unconnected/unanswered. Unconnected details: ${data.outgoingUnconnectedDetails.joinToString(", ").ifBlank { "None" }}
+- Incoming: ${data.incomingTotalCount} total, ${data.incomingConnectedCount} connected (${formatDur(
+        data.incomingConnectedDurSec * 1000L
+    )}), ${data.incomingMissedCount} missed/rejected. Missed details: ${data.incomingMissedDetails.joinToString(
+        ", "
+    ).ifBlank {
+        "None"
+    }}
+- Outgoing: ${data.outgoingTotalCount} total, ${data.outgoingConnectedCount} connected (${formatDur(
+        data.outgoingConnectedDurSec * 1000L
+    )}), ${data.outgoingUnconnectedCount} unconnected/unanswered. Unconnected details: ${data.outgoingUnconnectedDetails.joinToString(
+        ", "
+    ).ifBlank {
+        "None"
+    }}
 2. Screen & Unlocks:
 - Screen On Time: ${formatDur(data.screenTimeMs)}
 - Total Unlocks: ${data.unlockCount} (Actual Usage Sessions: ${data.actualUsageCount}, Quick Lock Screen Glances: ${data.quickGlanceCount})
 - Unlock Types: Fingerprint: ${data.unlockFingerprint}, Face: ${data.unlockFace}, PIN: ${data.unlockPin}
 3. Connectivity & Data:
-- Wi-Fi: ${formatDur(data.wifiTimeMs)} (SSID: ${data.wifiSsid}), Consumed: ${NetworkDataHelper.formatBytes(data.wifiDataBytes)}, Sessions: ${data.wifiSessionCount}
-- Mobile Data: ${formatDur(data.mobileDataTimeMs)}, Consumed: ${NetworkDataHelper.formatBytes(data.mobileDataBytes)}, Sessions: ${data.mobileDataSessionCount}
-- Simultaneous Wi-Fi & Mobile Data: ${formatDur(data.bothWifiDataMs)} (${data.bothWifiDataCount} times)
-- Bluetooth: ${formatDur(data.bluetoothTimeMs)} (Buds: ${formatDur(data.btBudsMs)}, Watch: ${formatDur(data.btWatchMs)}, Auto: ${formatDur(data.btAutoMs)})
+- Wi-Fi: ${formatDur(
+        data.wifiTimeMs
+    )} (SSID: ${data.wifiSsid}), Consumed: ${NetworkDataHelper.formatBytes(
+        data.wifiDataBytes
+    )}, Sessions: ${data.wifiSessionCount}
+- Mobile Data: ${formatDur(
+        data.mobileDataTimeMs
+    )}, Consumed: ${NetworkDataHelper.formatBytes(
+        data.mobileDataBytes
+    )}, Sessions: ${data.mobileDataSessionCount}
+- Simultaneous Wi-Fi & Mobile Data: ${formatDur(
+        data.bothWifiDataMs
+    )} (${data.bothWifiDataCount} times)
+- Bluetooth: ${formatDur(
+        data.bluetoothTimeMs
+    )} (Buds: ${formatDur(
+        data.btBudsMs
+    )}, Watch: ${formatDur(data.btWatchMs)}, Auto: ${formatDur(data.btAutoMs)})
 - GPS: ${formatDur(data.gpsTimeMs)}
 4. Battery:
 - Battery Dropped: ${data.batteryUsedPct}%
-- Screen On Drain Rate: ${String.format(Locale.getDefault(), "%.1f", data.screenOnDrainRatePctPerHour)}% / hour
-- Charging: ${formatDur(data.chargingTimeMs)} (${data.chargingSessionCount} sessions). Log: ${data.chargingSessionsDetails.joinToString("; ").ifBlank { "None" }}
+- Screen On Drain Rate: ${String.format(
+        Locale.getDefault(),
+        "%.1f",
+        data.screenOnDrainRatePctPerHour
+    )}% / hour
+- Charging: ${formatDur(
+        data.chargingTimeMs
+    )} (${data.chargingSessionCount} sessions). Log: ${data.chargingSessionsDetails.joinToString(
+        "; "
+    ).ifBlank {
+        "None"
+    }}
 5. Top Apps Used:
-${data.topApps.take(6).joinToString("\n") { "• ${it.first}: ${formatDur(it.second)}" }.ifBlank { "None recorded" }}
+${data.topApps.take(6).joinToString("\n") {
+        "• ${it.first}: ${formatDur(it.second)}"
+    }.ifBlank { "None recorded" }}
 
 FORMAT REQUIREMENT:
 ==================================================
-           FIRSTLOG DAILY ACTIVITY SUMMARY REPORT
+           ${context.getString(R.string.summary_report_title)}
 ==================================================
 Date: ${data.dateStr}
 Generated: [Time]
@@ -192,18 +241,17 @@ AI Engine: Google Gemini AI
 --------------------------------------------------
 [Personalized AI analysis covering communication balance, glance vs focus sessions, power drain efficiency, and digital well-being recommendation]
 ==================================================
-""".trimIndent()
-    }
+    """.trimIndent()
 
-    fun generateLocalSummary(data: DailyActivitySummaryData): String {
+    fun generateLocalSummary(context: Context, data: DailyActivitySummaryData): String {
         val nowStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
         val sb = StringBuilder()
         sb.appendLine("==================================================")
-        sb.appendLine("           FIRSTLOG DAILY ACTIVITY SUMMARY REPORT")
+        sb.appendLine(context.getString(R.string.summary_report_title))
         sb.appendLine("==================================================")
         sb.appendLine("Date: ${data.dateStr}")
         sb.appendLine("Generated: $nowStr")
-        sb.appendLine("AI Engine: FirstLog Intelligent Summary Engine")
+        sb.appendLine(context.getString(R.string.local_summary_engine))
         sb.appendLine()
 
         sb.appendLine("--------------------------------------------------")
@@ -211,7 +259,11 @@ AI Engine: Google Gemini AI
         sb.appendLine("--------------------------------------------------")
         sb.appendLine("• Incoming Calls:")
         sb.appendLine("  - Total: ${data.incomingTotalCount}")
-        sb.appendLine("  - Connected: ${data.incomingConnectedCount} (${formatDur(data.incomingConnectedDurSec * 1000L)})")
+        sb.appendLine(
+            "  - Connected: ${data.incomingConnectedCount} (${formatDur(
+                data.incomingConnectedDurSec * 1000L
+            )})"
+        )
         sb.appendLine("  - Missed / Rejected: ${data.incomingMissedCount}")
         if (data.incomingMissedDetails.isNotEmpty()) {
             sb.appendLine("  - Missed Call Details:")
@@ -219,7 +271,11 @@ AI Engine: Google Gemini AI
         }
         sb.appendLine("• Outgoing Calls:")
         sb.appendLine("  - Total: ${data.outgoingTotalCount}")
-        sb.appendLine("  - Connected: ${data.outgoingConnectedCount} (${formatDur(data.outgoingConnectedDurSec * 1000L)})")
+        sb.appendLine(
+            "  - Connected: ${data.outgoingConnectedCount} (${formatDur(
+                data.outgoingConnectedDurSec * 1000L
+            )})"
+        )
         sb.appendLine("  - Unconnected / Unanswered: ${data.outgoingUnconnectedCount}")
         if (data.outgoingUnconnectedDetails.isNotEmpty()) {
             sb.appendLine("  - Unconnected Outgoing Details:")
@@ -234,7 +290,9 @@ AI Engine: Google Gemini AI
         sb.appendLine("• Total Screen Unlocks: ${data.unlockCount} times")
         sb.appendLine("  - Actual Usage Sessions: ${data.actualUsageCount} times")
         sb.appendLine("  - Quick Lock Screen Glances: ${data.quickGlanceCount} times")
-        sb.appendLine("• Unlock Methods: Fingerprint: ${data.unlockFingerprint} • Face: ${data.unlockFace} • PIN: ${data.unlockPin}")
+        sb.appendLine(
+            "• Unlock Methods: Fingerprint: ${data.unlockFingerprint} • Face: ${data.unlockFace} • PIN: ${data.unlockPin}"
+        )
         sb.appendLine()
 
         sb.appendLine("--------------------------------------------------")
@@ -244,14 +302,33 @@ AI Engine: Google Gemini AI
         sb.appendLine("  - Active Duration: ${formatDur(data.wifiTimeMs)}")
         sb.appendLine("  - Connected SSID: ${data.wifiSsid}")
         sb.appendLine("  - Data Consumed: ${NetworkDataHelper.formatBytes(data.wifiDataBytes)}")
-        sb.appendLine("  - Sessions: ${data.wifiSessionCount} (${NetworkDataHelper.formatUsagePerSession(data.wifiDataBytes, data.wifiSessionCount)})")
+        sb.appendLine(
+            "  - Sessions: ${data.wifiSessionCount} (${NetworkDataHelper.formatUsagePerSession(
+                data.wifiDataBytes,
+                data.wifiSessionCount
+            )})"
+        )
         sb.appendLine("• Mobile Data Activity:")
         sb.appendLine("  - Active Duration: ${formatDur(data.mobileDataTimeMs)}")
         sb.appendLine("  - Data Consumed: ${NetworkDataHelper.formatBytes(data.mobileDataBytes)}")
-        sb.appendLine("  - Sessions: ${data.mobileDataSessionCount} (${NetworkDataHelper.formatUsagePerSession(data.mobileDataBytes, data.mobileDataSessionCount)})")
-        sb.appendLine("• Dual Connection (Both Wi-Fi & Data active): ${formatDur(data.bothWifiDataMs)} (${data.bothWifiDataCount} occurrences)")
+        sb.appendLine(
+            "  - Sessions: ${data.mobileDataSessionCount} (" +
+                "${NetworkDataHelper.formatUsagePerSession(
+                    data.mobileDataBytes,
+                    data.mobileDataSessionCount
+                )})"
+        )
+        sb.appendLine(
+            "• Dual Connection (Both Wi-Fi & Data active): ${formatDur(
+                data.bothWifiDataMs
+            )} (${data.bothWifiDataCount} occurrences)"
+        )
         sb.appendLine("• Bluetooth Active: ${formatDur(data.bluetoothTimeMs)}")
-        sb.appendLine("  - Audio/Buds: ${formatDur(data.btBudsMs)} | Smartwatch: ${formatDur(data.btWatchMs)} | Car/Auto: ${formatDur(data.btAutoMs)}")
+        sb.appendLine(
+            "  - Audio/Buds: ${formatDur(
+                data.btBudsMs
+            )} | Smartwatch: ${formatDur(data.btWatchMs)} | Car/Auto: ${formatDur(data.btAutoMs)}"
+        )
         sb.appendLine("• GPS / Location Active: ${formatDur(data.gpsTimeMs)}")
         sb.appendLine()
 
@@ -259,7 +336,11 @@ AI Engine: Google Gemini AI
         sb.appendLine("4. BATTERY & POWER EFFICIENCY")
         sb.appendLine("--------------------------------------------------")
         sb.appendLine("• Total Battery Discharged: ${data.batteryUsedPct}%")
-        val drainRateStr = String.format(Locale.getDefault(), "%.1f", data.screenOnDrainRatePctPerHour)
+        val drainRateStr = String.format(
+            Locale.getDefault(),
+            "%.1f",
+            data.screenOnDrainRatePctPerHour
+        )
         sb.appendLine("• Screen On Drain Rate: $drainRateStr% / hour")
         sb.appendLine("• Charging Activity:")
         sb.appendLine("  - Total Charging Time: ${formatDur(data.chargingTimeMs)}")
@@ -284,30 +365,48 @@ AI Engine: Google Gemini AI
         sb.appendLine("--------------------------------------------------")
         sb.appendLine("6. AI EXECUTIVE SUMMARY & PRODUCTIVITY INSIGHTS")
         sb.appendLine("--------------------------------------------------")
-        val glanceRatio = if (data.unlockCount > 0) ((data.quickGlanceCount.toDouble() / data.unlockCount) * 100).toInt() else 0
-        sb.appendLine("• Behavioral Pattern: You checked your device ${data.unlockCount} times today. $glanceRatio% were quick lock-screen glances, while ${data.actualUsageCount} developed into active work sessions.")
-        if (data.screenOnDrainRatePctPerHour > 18.0) {
-            sb.appendLine("• Power Health: Your screen-on battery drain rate is currently elevated ($drainRateStr%/hr). Reducing screen brightness and background radio usage may extend endurance.")
+        val glanceRatio = if (data.unlockCount >
+            0
+        ) {
+            ((data.quickGlanceCount.toDouble() / data.unlockCount) * 100).toInt()
         } else {
-            sb.appendLine("• Power Health: Battery drain rate ($drainRateStr%/hr) is within optimal power efficiency margins.")
+            0
+        }
+        sb.appendLine(
+            "• Behavioral Pattern: You checked your device ${data.unlockCount} times today. $glanceRatio% were quick lock-screen glances, while ${data.actualUsageCount} developed into active work sessions."
+        )
+        if (data.screenOnDrainRatePctPerHour > 18.0) {
+            sb.appendLine(
+                "• Power Health: Your screen-on battery drain rate is currently elevated ($drainRateStr%/hr). Reducing screen brightness and background radio usage may extend endurance."
+            )
+        } else {
+            sb.appendLine(
+                "• Power Health: Battery drain rate ($drainRateStr%/hr) is within optimal power efficiency margins."
+            )
         }
         val callTotal = data.incomingTotalCount + data.outgoingTotalCount
-        sb.appendLine("• Communication Load: Handled $callTotal calls total. ${data.incomingMissedCount} incoming calls were missed and ${data.outgoingUnconnectedCount} outgoing calls remained unanswered.")
+        sb.appendLine(
+            "• Communication Load: Handled $callTotal calls total. ${data.incomingMissedCount} incoming calls were missed and ${data.outgoingUnconnectedCount} outgoing calls remained unanswered."
+        )
         sb.appendLine("==================================================")
 
         return sb.toString()
     }
 
-    fun saveReportToFile(context: Context, reportContent: String, dateStr: String, googleAccount: String?): String {
-        return try {
-            val docsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) ?: context.filesDir
-            val prefix = if (!googleAccount.isNullOrBlank()) "Drive_Report" else "Local_Report"
-            val file = File(docsDir, "FirstLogApp_${prefix}_$dateStr.txt")
-            file.writeText(reportContent)
-            file.absolutePath
-        } catch (_: Exception) {
-            ""
-        }
+    fun saveReportToFile(
+        context: Context,
+        reportContent: String,
+        dateStr: String,
+        googleAccount: String?
+    ): String = try {
+        val docsDir =
+            context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) ?: context.filesDir
+        val prefix = if (!googleAccount.isNullOrBlank()) "Drive_Report" else "Local_Report"
+        val file = File(docsDir, "FirstLogApp_${prefix}_$dateStr.txt")
+        file.writeText(reportContent)
+        file.absolutePath
+    } catch (_: Exception) {
+        ""
     }
 
     private fun formatDur(millis: Long): String {

@@ -11,14 +11,14 @@ import android.os.Bundle
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 data class ActiveNotificationItem(
     val key: String,
@@ -57,21 +57,37 @@ class AppNotificationListenerService : NotificationListenerService() {
         private const val KEY_HISTORY_JSON = "history_json"
 
         fun isPermissionGranted(context: Context): Boolean {
-            val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: ""
-            val comp = ComponentName(context, AppNotificationListenerService::class.java).flattenToString()
+            val flat =
+                Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+                    ?: ""
+            val comp = ComponentName(
+                context,
+                AppNotificationListenerService::class.java
+            ).flattenToString()
             return flat.contains(comp) || flat.contains(context.packageName)
         }
 
         fun classifyCategory(packageName: String, categoryTag: String? = null): String {
             val lower = packageName.lowercase(Locale.getDefault())
             if (lower.contains("whatsapp")) return "WhatsApp"
-            if (lower == "com.google.android.gm" || lower.contains("gmail") || lower.contains(".mail") || lower.contains("outlook")) return "Gmail"
-            if (lower.contains("dialer") || lower.contains("telecom") || lower.contains("phone") || lower.contains("truecaller") ||
-                categoryTag == Notification.CATEGORY_CALL || categoryTag == Notification.CATEGORY_MISSED_CALL) {
+            if (lower == "com.google.android.gm" || lower.contains("gmail") ||
+                lower.contains(".mail") ||
+                lower.contains("outlook")
+            ) {
+                return "Gmail"
+            }
+            if (lower.contains("dialer") || lower.contains("telecom") || lower.contains("phone") ||
+                lower.contains("truecaller") ||
+                categoryTag == Notification.CATEGORY_CALL ||
+                categoryTag == Notification.CATEGORY_MISSED_CALL
+            ) {
                 return "Call"
             }
-            if (lower.contains("messaging") || lower.contains("mms") || lower.contains("sms") || lower.contains("telegram") || lower.contains("signal") ||
-                categoryTag == Notification.CATEGORY_MESSAGE) {
+            if (lower.contains("messaging") || lower.contains("mms") || lower.contains("sms") ||
+                lower.contains("telegram") ||
+                lower.contains("signal") ||
+                categoryTag == Notification.CATEGORY_MESSAGE
+            ) {
                 return "Message"
             }
             return "Others"
@@ -84,7 +100,10 @@ class AppNotificationListenerService : NotificationListenerService() {
                 val savedDate = prefs.getString(KEY_HISTORY_DATE, "") ?: ""
                 if (savedDate != todayStr) {
                     // Start fresh for new day
-                    prefs.edit().putString(KEY_HISTORY_DATE, todayStr).putString(KEY_HISTORY_JSON, "[]").apply()
+                    prefs.edit().putString(
+                        KEY_HISTORY_DATE,
+                        todayStr
+                    ).putString(KEY_HISTORY_JSON, "[]").apply()
                     _history.value = emptyList()
                     return
                 }
@@ -148,19 +167,22 @@ class AppNotificationListenerService : NotificationListenerService() {
             } catch (_: Exception) {}
         }
 
-        fun markAsRead(key: String): Boolean {
-            return try {
-                instance?.cancelNotification(key)
-                _notifications.value = _notifications.value.filter { it.key != key }
-                true
-            } catch (_: Exception) {
-                false
-            }
+        fun markAsRead(key: String): Boolean = try {
+            instance?.cancelNotification(key)
+            _notifications.value = _notifications.value.filter { it.key != key }
+            true
+        } catch (_: Exception) {
+            false
         }
 
         fun directReply(context: Context, key: String, replyText: String): Boolean {
             val inst = instance ?: return false
-            val sbns = try { inst.activeNotifications } catch (_: Exception) { null } ?: emptyArray()
+            val sbns =
+                try {
+                    inst.activeNotifications
+                } catch (_: Exception) {
+                    null
+                } ?: emptyArray()
             val targetSbn = sbns.firstOrNull { it.key == key } ?: return false
             val actions = targetSbn.notification.actions ?: return false
 
@@ -243,9 +265,9 @@ class AppNotificationListenerService : NotificationListenerService() {
             val current = _history.value.toMutableList()
             val isDuplicate = current.any {
                 it.packageName == sbn.packageName &&
-                it.title == title &&
-                it.content == text &&
-                kotlin.math.abs(it.timestamp - sbn.postTime) < 3000L
+                    it.title == title &&
+                    it.content == text &&
+                    kotlin.math.abs(it.timestamp - sbn.postTime) < 3000L
             }
 
             if (!isDuplicate) {
@@ -325,19 +347,20 @@ class AppNotificationListenerService : NotificationListenerService() {
         return false
     }
 
-    private fun resolveAppName(pkg: String): String {
-        return try {
-            val pm = packageManager
-            val appInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION") pm.getApplicationInfo(pkg, 0)
-            }
-            pm.getApplicationLabel(appInfo).toString()
-        } catch (_: Exception) {
-            val parts = pkg.split(".")
-            val name = parts.lastOrNull() ?: pkg
-            name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    private fun resolveAppName(pkg: String): String = try {
+        val pm = packageManager
+        val appInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getApplicationInfo(pkg, PackageManager.ApplicationInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getApplicationInfo(pkg, 0)
+        }
+        pm.getApplicationLabel(appInfo).toString()
+    } catch (_: Exception) {
+        val parts = pkg.split(".")
+        val name = parts.lastOrNull() ?: pkg
+        name.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
         }
     }
 }

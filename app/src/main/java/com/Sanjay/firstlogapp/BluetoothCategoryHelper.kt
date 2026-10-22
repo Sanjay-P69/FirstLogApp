@@ -1,8 +1,5 @@
 package com.Sanjay.firstlogapp
 
-import com.Sanjay.firstlogapp.data.device.DeviceStateHelper
-import com.Sanjay.firstlogapp.data.local.DataManager
-
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
@@ -12,6 +9,8 @@ import android.content.Intent
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
+import com.sanjay.tracewise.data.device.DeviceStateHelper
+import com.sanjay.tracewise.data.local.DataManager
 import java.util.Locale
 
 object BluetoothCategoryHelper {
@@ -44,9 +43,10 @@ object BluetoothCategoryHelper {
             return CAT_AUTO
         }
         if (btClass != null && (
-            btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO ||
-            btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE
-        )) {
+                btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO ||
+                    btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE
+                )
+        ) {
             return CAT_AUTO
         }
 
@@ -54,22 +54,29 @@ object BluetoothCategoryHelper {
         if (lower.contains("watch") || lower.contains("band") ||
             lower.contains("fit") || lower.contains("wear") || lower.contains("gear") ||
             lower.contains("garmin") || lower.contains("amazfit") ||
-            lower.contains("noise") || lower.contains("fire-boltt") || lower.contains("fireboltt") ||
-            lower.contains("boat wave") || lower.contains("boat storm") || lower.contains("boat xtend") ||
+            lower.contains(
+                "noise"
+            ) || lower.contains("fire-boltt") || lower.contains("fireboltt") ||
+            lower.contains("boat wave") || lower.contains("boat storm") ||
+            lower.contains("boat xtend") ||
             lower.contains("titan") || lower.contains("fastrack") ||
             lower.contains("fossil") || lower.contains("suunto") || lower.contains("polar") ||
             lower.contains("dizo") || lower.contains("honor band") || lower.contains("mi band") ||
-            lower.contains("galaxy watch") || lower.contains("pixel watch") || lower.contains("apple watch") ||
-            lower.contains("fitbit") || lower.contains("huawei watch") || lower.contains("oppo watch") ||
-            lower.contains("realme watch") || lower.contains("redmi watch") || lower.contains("cmf watch") ||
+            lower.contains("galaxy watch") || lower.contains("pixel watch") ||
+            lower.contains("apple watch") ||
+            lower.contains("fitbit") || lower.contains("huawei watch") ||
+            lower.contains("oppo watch") ||
+            lower.contains("realme watch") || lower.contains("redmi watch") ||
+            lower.contains("cmf watch") ||
             lower.contains("crossbeats")
         ) {
             return CAT_WATCH
         }
         if (btClass != null && (
-            btClass.majorDeviceClass == BluetoothClass.Device.Major.WEARABLE ||
-            btClass.deviceClass == BluetoothClass.Device.WEARABLE_WRIST_WATCH
-        )) {
+                btClass.majorDeviceClass == BluetoothClass.Device.Major.WEARABLE ||
+                    btClass.deviceClass == BluetoothClass.Device.WEARABLE_WRIST_WATCH
+                )
+        ) {
             return CAT_WATCH
         }
 
@@ -94,11 +101,12 @@ object BluetoothCategoryHelper {
             return CAT_BUDS
         }
         if (btClass != null && (
-            btClass.majorDeviceClass == BluetoothClass.Device.Major.AUDIO_VIDEO ||
-            btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET ||
-            btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES ||
-            btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_LOUDSPEAKER
-        )) {
+                btClass.majorDeviceClass == BluetoothClass.Device.Major.AUDIO_VIDEO ||
+                    btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET ||
+                    btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES ||
+                    btClass.deviceClass == BluetoothClass.Device.AUDIO_VIDEO_LOUDSPEAKER
+                )
+        ) {
             return CAT_BUDS
         }
 
@@ -121,15 +129,28 @@ object BluetoothCategoryHelper {
 
     fun isBudsConnected(context: Context): Boolean {
         if (!DeviceStateHelper.isBluetoothEnabled(context)) return false
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
+        val audioManager =
+            context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val audioDevs = try { audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS) } catch (_: Exception) { emptyArray() }
+            val audioDevs = try {
+                audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            } catch (
+                _: Exception
+            ) {
+                emptyArray()
+            }
             for (dev in audioDevs) {
                 val type = dev.type
                 val isBtAudio = type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
-                        type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
-                        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && type == AudioDeviceInfo.TYPE_BLE_HEADSET) ||
-                        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && type == AudioDeviceInfo.TYPE_HEARING_AID)
+                    type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
+                    (
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                            type == AudioDeviceInfo.TYPE_BLE_HEADSET
+                        ) ||
+                    (
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+                            type == AudioDeviceInfo.TYPE_HEARING_AID
+                        )
                 if (isBtAudio) {
                     val pName = dev.productName?.toString() ?: ""
                     if (classifyDevice(pName, null) == CAT_BUDS) {
@@ -141,7 +162,11 @@ object BluetoothCategoryHelper {
         return false
     }
 
-    fun checkAllBluetoothConnections(context: Context, dataManager: DataManager, now: Long = System.currentTimeMillis()) {
+    fun checkAllBluetoothConnections(
+        context: Context,
+        dataManager: DataManager,
+        now: Long = System.currentTimeMillis()
+    ) {
         if (!DeviceStateHelper.isBluetoothEnabled(context)) {
             dataManager.onBluetoothDeviceDisconnected(CAT_BUDS, now)
             dataManager.onBluetoothDeviceDisconnected(CAT_WATCH, now)
@@ -157,29 +182,38 @@ object BluetoothCategoryHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
                 val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-                val audioDevs = audioManager?.getDevices(AudioManager.GET_DEVICES_OUTPUTS) ?: emptyArray()
+                val audioDevs =
+                    audioManager?.getDevices(AudioManager.GET_DEVICES_OUTPUTS) ?: emptyArray()
                 for (dev in audioDevs) {
                     val type = dev.type
                     val isBtAudio = type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
-                            type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
-                            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && (
+                        type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
+                        (
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && (
                                 type == AudioDeviceInfo.TYPE_BLE_HEADSET ||
-                                type == AudioDeviceInfo.TYPE_BLE_SPEAKER ||
-                                type == AudioDeviceInfo.TYPE_BLE_BROADCAST
-                            )) ||
-                            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && type == AudioDeviceInfo.TYPE_HEARING_AID)
+                                    type == AudioDeviceInfo.TYPE_BLE_SPEAKER ||
+                                    type == AudioDeviceInfo.TYPE_BLE_BROADCAST
+                                )
+                            ) ||
+                        (
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+                                type == AudioDeviceInfo.TYPE_HEARING_AID
+                            )
                     if (isBtAudio) {
                         val pName = dev.productName?.toString() ?: ""
                         val cat = classifyDevice(pName, null)
                         if (cat == CAT_AUTO) {
                             connectedCategories.add(CAT_AUTO)
-                            categoryDeviceNames[CAT_AUTO] = if (pName.isNotBlank()) pName else "Android Auto"
+                            categoryDeviceNames[CAT_AUTO] =
+                                if (pName.isNotBlank()) pName else "Android Auto"
                         } else if (cat == CAT_BUDS) {
                             connectedCategories.add(CAT_BUDS)
-                            categoryDeviceNames[CAT_BUDS] = if (pName.isNotBlank()) pName else "Audio Buds"
+                            categoryDeviceNames[CAT_BUDS] =
+                                if (pName.isNotBlank()) pName else "Audio Buds"
                         } else if (cat == CAT_WATCH) {
                             connectedCategories.add(CAT_WATCH)
-                            categoryDeviceNames[CAT_WATCH] = if (pName.isNotBlank()) pName else "Smartwatch"
+                            categoryDeviceNames[CAT_WATCH] =
+                                if (pName.isNotBlank()) pName else "Smartwatch"
                         }
                     }
                 }
@@ -189,10 +223,19 @@ object BluetoothCategoryHelper {
         // 2. BluetoothManager GATT devices (Smartwatches & Fitness Bands ONLY - never buds)
         try {
             val bm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-            val gattDevices = bm?.getConnectedDevices(android.bluetooth.BluetoothProfile.GATT) ?: emptyList()
+            val gattDevices =
+                bm?.getConnectedDevices(android.bluetooth.BluetoothProfile.GATT) ?: emptyList()
             for (dev in gattDevices) {
-                val name = try { dev.name } catch (_: SecurityException) { null }
-                val btClass = try { dev.bluetoothClass } catch (_: SecurityException) { null }
+                val name = try {
+                    dev.name
+                } catch (_: SecurityException) {
+                    null
+                }
+                val btClass = try {
+                    dev.bluetoothClass
+                } catch (_: SecurityException) {
+                    null
+                }
                 val cat = classifyDevice(name, btClass)
                 if (cat == CAT_WATCH || cat == CAT_OTHER) {
                     val targetCat = if (cat == CAT_OTHER) CAT_WATCH else cat
@@ -207,14 +250,32 @@ object BluetoothCategoryHelper {
             val adapter = BluetoothAdapter.getDefaultAdapter()
             if (adapter != null && adapter.isEnabled) {
                 val isConnectedMethod = BluetoothDevice::class.java.getMethod("isConnected")
-                val bonded = try { adapter.bondedDevices } catch (_: SecurityException) { null } ?: emptySet()
+                val bonded =
+                    try {
+                        adapter.bondedDevices
+                    } catch (_: SecurityException) {
+                        null
+                    }
+                        ?: emptySet()
                 for (dev in bonded) {
                     val isConn = try {
                         isConnectedMethod.invoke(dev) as? Boolean ?: false
-                    } catch (_: Exception) { false }
+                    } catch (_: Exception) {
+                        false
+                    }
                     if (isConn) {
-                        val name = try { dev.name } catch (_: SecurityException) { null }
-                        val btClass = try { dev.bluetoothClass } catch (_: SecurityException) { null }
+                        val name = try {
+                            dev.name
+                        } catch (_: SecurityException) {
+                            null
+                        }
+                        val btClass = try {
+                            dev.bluetoothClass
+                        } catch (
+                            _: SecurityException
+                        ) {
+                            null
+                        }
                         val cat = classifyDevice(name, btClass)
                         if (cat == CAT_WATCH || cat == CAT_AUTO) {
                             connectedCategories.add(cat)
@@ -241,25 +302,48 @@ object BluetoothCategoryHelper {
         }
     }
 
-    fun handleAclEvent(context: Context, dataManager: DataManager, intent: Intent, isConnected: Boolean, now: Long = System.currentTimeMillis()) {
+    fun handleAclEvent(
+        context: Context,
+        dataManager: DataManager,
+        intent: Intent,
+        isConnected: Boolean,
+        now: Long = System.currentTimeMillis()
+    ) {
         val device: BluetoothDevice? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
         } else {
-            @Suppress("DEPRECATION") intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
         }
         val nameExtra = intent.getStringExtra(BluetoothDevice.EXTRA_NAME)
             ?: intent.getStringExtra("android.bluetooth.device.extra.NAME")
-        val name = nameExtra ?: try { device?.name } catch (_: SecurityException) { null }
-        val btClass = try { device?.bluetoothClass } catch (_: SecurityException) { null }
+        val name = nameExtra ?: try {
+            device?.name
+        } catch (_: SecurityException) {
+            null
+        }
+        val btClass = try {
+            device?.bluetoothClass
+        } catch (_: SecurityException) {
+            null
+        }
         val category = classifyDevice(name, btClass)
         if (isConnected) {
             if (category == CAT_BUDS) {
                 // If it's buds, only mark connected if audio routing is confirmed
                 if (isBudsConnected(context)) {
-                    dataManager.onBluetoothDeviceConnected(category, name ?: getCategoryTitle(category), now)
+                    dataManager.onBluetoothDeviceConnected(
+                        category,
+                        name ?: getCategoryTitle(category),
+                        now
+                    )
                 }
             } else {
-                dataManager.onBluetoothDeviceConnected(category, name ?: getCategoryTitle(category), now)
+                dataManager.onBluetoothDeviceConnected(
+                    category,
+                    name ?: getCategoryTitle(category),
+                    now
+                )
             }
         } else {
             dataManager.onBluetoothDeviceDisconnected(category, now)
@@ -267,4 +351,3 @@ object BluetoothCategoryHelper {
         checkAllBluetoothConnections(context, dataManager, now)
     }
 }
-

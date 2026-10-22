@@ -1,7 +1,5 @@
 package com.Sanjay.firstlogapp
 
-import com.Sanjay.firstlogapp.data.device.DeviceStateHelper
-
 import android.app.usage.NetworkStatsManager
 import android.content.Context
 import android.net.ConnectivityManager
@@ -10,6 +8,7 @@ import android.net.TrafficStats
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
+import com.sanjay.tracewise.data.device.DeviceStateHelper
 import java.util.Locale
 
 object NetworkDataHelper {
@@ -33,7 +32,9 @@ object NetworkDataHelper {
                 }
             }
 
-            val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            val wm = context.applicationContext.getSystemService(
+                Context.WIFI_SERVICE
+            ) as? WifiManager
             val info = wm?.connectionInfo
             val ssid = cleanSsid(info?.ssid)
             if (ssid.isNotBlank() && ssid != "<unknown ssid>") {
@@ -55,11 +56,17 @@ object NetworkDataHelper {
 
     fun getNetworkBytes(context: Context, isWifi: Boolean, startTime: Long, endTime: Long): Long {
         if (endTime <= startTime) return 0L
-        val transport = if (isWifi) NetworkCapabilities.TRANSPORT_WIFI else NetworkCapabilities.TRANSPORT_CELLULAR
+        val transport = if (isWifi) {
+            NetworkCapabilities.TRANSPORT_WIFI
+        } else {
+            NetworkCapabilities.TRANSPORT_CELLULAR
+        }
 
         // Try NetworkStatsManager (requires PACKAGE_USAGE_STATS permission)
         try {
-            val nsm = context.getSystemService(Context.NETWORK_STATS_SERVICE) as? NetworkStatsManager
+            val nsm = context.getSystemService(
+                Context.NETWORK_STATS_SERVICE
+            ) as? NetworkStatsManager
             if (nsm != null) {
                 val bucket = nsm.querySummaryForDevice(transport, null, startTime, endTime)
                 val total = (bucket.rxBytes + bucket.txBytes).coerceAtLeast(0L)
@@ -102,10 +109,15 @@ object NetworkDataHelper {
         return "${formatBytes(avgBytes)} / session"
     }
 
-    fun getTodayWifiBytes(context: Context, startTime: Long, endTime: Long = System.currentTimeMillis()): Long =
-        getNetworkBytes(context, isWifi = true, startTime = startTime, endTime = endTime)
+    fun getTodayWifiBytes(
+        context: Context,
+        startTime: Long,
+        endTime: Long = System.currentTimeMillis()
+    ): Long = getNetworkBytes(context, isWifi = true, startTime = startTime, endTime = endTime)
 
-    fun getTodayMobileDataBytes(context: Context, startTime: Long, endTime: Long = System.currentTimeMillis()): Long =
-        getNetworkBytes(context, isWifi = false, startTime = startTime, endTime = endTime)
+    fun getTodayMobileDataBytes(
+        context: Context,
+        startTime: Long,
+        endTime: Long = System.currentTimeMillis()
+    ): Long = getNetworkBytes(context, isWifi = false, startTime = startTime, endTime = endTime)
 }
-

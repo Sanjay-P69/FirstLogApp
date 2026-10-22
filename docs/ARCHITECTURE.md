@@ -1,5 +1,24 @@
 # UI independent from device tracking
 
+## Tracewise namespace and installed compatibility
+
+The visible app name is Tracewise and the Gradle namespace is
+`com.sanjay.tracewise`, including Sanjay's name. Modern `data`, `ui`, and `core`
+packages and tests use that prefix. Existing root-level legacy adapters remain
+under `com.Sanjay.firstlogapp`; this is a deliberate compatibility boundary, not
+a second app or monitoring implementation.
+
+The installed application ID, preference/backup keys, FileProvider authority,
+activity, services, and receiver class names remain unchanged. Manifest entries
+now use fully qualified legacy component names so changing the namespace does
+not change notification-listener identity, alarms, boot receivers, or launch
+targets. Generated `R` imports use the new namespace. The instrumentation
+`InstalledIdentityTest` verifies the installed ID and registered components on a
+device; it is not a substitute for testing an actual update over an older APK.
+
+The architecture guard scans both the new feature packages and retained legacy
+adapters. `FirstLogAppTheme` and storage identifiers are intentionally preserved.
+
 The app remains a single Android module. Package boundaries make UI changes possible without editing the logging service; Gradle modules can follow if enforcement or build times justify them.
 
 ```mermaid

@@ -1,6 +1,15 @@
-# FirstLog
+# Tracewise (formerly FirstLog)
 
 Android device-activity tracking and daily summaries, written in Kotlin and Jetpack Compose.
+
+Tracewise is the chosen name for Sanjay's planned AI-assisted activity and settings
+companion. Its namespace is `com.sanjay.tracewise`; the installed application ID
+remains `com.Sanjay.firstlogapp` to preserve update/data compatibility. Modern
+data/UI/core packages use the new namespace; legacy root adapters and Android
+entry points retain their original packages. The new icon combines a conversation
+outline with an activity trace. See [Sanjay's TODO](todo%20for%20sanjay.md) for the
+three naming options and the permanent SQLite/AI roadmap. SQLite, agentic settings,
+deep SQL questions, and proactive insights remain planned work.
 
 This branch introduces a Material 3 Expressive redesign of the main destinations and separates their rendering from Android tracking and persistence. The existing application ID and storage format are retained. Visual/device review and the documented legacy migrations remain. Debug APK assembly, unit tests, lint, formatting, static analysis, and architecture checks passed in [CI run 22](https://github.com/Devasy/FirstLogApp/actions/runs/39803072242). [Download the updated debug APK and reports](https://github.com/Devasy/FirstLogApp/actions/runs/39803072242/artifacts/12436023798); extract app/build/outputs/apk/debug/app-debug.apk from the ZIP.
 
@@ -13,6 +22,11 @@ This branch introduces a Material 3 Expressive redesign of the main destinations
 - [Future SQLite and conversational analytics architecture](docs/AGENT_ANALYTICS_ARCHITECTURE.md)
 
 ## Build and check
+
+For a Windows / Antigravity walkthrough, read [instructions.md](instructions.md).
+Copy `.env.example` to `.env` for local paths; use `scripts/build.ps1` to load it.
+Release passwords and keystores are private, ignored files. CI compares two clean
+unsigned release APK builds; see [build repeatability](docs/CI.md#build-repeatability).
 
 Use JDK 21, Android SDK platform 36, and the checked-in Gradle wrapper. Keep the project versions in `gradle/libs.versions.toml`; Material 3 is explicitly pinned to `1.5.0-alpha13` for Expressive APIs.
 

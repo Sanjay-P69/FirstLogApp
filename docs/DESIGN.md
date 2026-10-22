@@ -1,4 +1,12 @@
-# FirstLog Material 3 Expressive design
+# Tracewise Material 3 Expressive design
+
+The current name is Tracewise (formerly FirstLog). The launcher mark combines a
+conversation outline and an activity trace, with one focal node for an insight.
+It uses a restrained petrol/ivory/mint palette and native adaptive-icon layers,
+including a separate monochrome drawable. Legacy launcher densities and the
+existing in-app logo resource share the same mark. Editable SVG sources and a
+preview are in `design/tracewise/`. This branding does not implement the planned
+SQLite assistant or alter dynamic app-theme colors.
 
 ## Product hierarchy
 

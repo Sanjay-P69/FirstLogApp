@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FirstLogApp"
+rootProject.name = "Tracewise"
 include(":app")
