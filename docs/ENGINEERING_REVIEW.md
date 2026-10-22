@@ -28,6 +28,8 @@ Source links point at the reviewed commit so they remain valid after the refacto
 
 The foreground-service constraints above were checked against [Android's timeout documentation](https://developer.android.com/develop/background-work/services/fgs/timeout) and [background start restrictions](https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start). A battery exemption should not be presented as an unconditional reliability guarantee.
 
+CI also exposed an unavailable baseline dependency: the inherited project requests Android platform 37, which the public SDK manager could not install (`Failed to find package platforms;android-37`). The draft now uses public SDK 36 for both compilation and target behavior; the installed application ID and minimum SDK stay unchanged. The original target-37 assumption is recorded above as part of the source review, not as a validated build configuration.
+
 ## Reusability findings
 
 - **Good starting points:** existing theme files, native navigation, segmented controls, metric cards, and a modal sheet show an attempt at shared primitives. Retain those concepts.
