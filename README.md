@@ -2,7 +2,7 @@
 
 Android device-activity tracking and daily summaries, written in Kotlin and Jetpack Compose.
 
-This branch introduces a Material 3 Expressive redesign of the main destinations and separates their rendering from Android tracking and persistence. The existing application ID and storage format are retained. This is a draft: the Android build and runtime behavior still need verification.
+This branch introduces a Material 3 Expressive redesign of the main destinations and separates their rendering from Android tracking and persistence. The existing application ID and storage format are retained. This remains a draft for visual/device review and the documented legacy migrations. Debug APK assembly, unit tests, lint, and the architecture guard passed in [CI](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870).
 
 - [Engineering review and prioritized findings](docs/ENGINEERING_REVIEW.md)
 - [Architecture and migration boundaries](docs/ARCHITECTURE.md)
@@ -24,7 +24,7 @@ With a compatible emulator or device:
 bash gradlew :app:connectedDebugAndroidTest
 ```
 
-Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. No rendered screenshots or successful APK build are included from this workspace. The GitHub workflow runs the architecture guard, debug build, unit tests, and lint when repository Actions are available; connected UI tests still require a device job or local device.
+Open `DashboardPreviews.kt` in Android Studio for light, dark, compact, tablet, and larger-font previews. Rendered screenshots are not included. A debug APK and reports are available in the passing CI run’s artifacts. The GitHub workflow runs the architecture guard, debug build, unit tests, and lint when repository Actions are available; connected UI tests still require a device job or local device.
 
 ## Boundaries
 

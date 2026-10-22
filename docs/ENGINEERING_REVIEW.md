@@ -66,11 +66,13 @@ Implemented: feature/package extraction; small activity; dashboard repository an
 
 Still open: transactional persistence and backup migration; foreground service redesign; legacy notification/history/report UI migration; full localization of mapper/legacy strings; credential migration; performance profiling and device verification.
 
-Verified locally: architecture dependency guard, XML/TOML parsing, and diff whitespace checks. Gradle wrapper startup attempted but dependency download failed with `java.net.SocketException: Operation not permitted`. The Android SDK is not installed in this workspace. Build/unit/lint/instrumentation tests and Compose previews are **not verified**; the branch must remain a draft until those checks run. See the CI workflow and `README.md` for commands.
+Verified locally: architecture dependency guard, XML/TOML parsing, and diff whitespace checks. Local Gradle startup failed with `java.net.SocketException: Operation not permitted`, so Android validation moved to GitHub Actions. [CI run 8](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870) passed debug APK assembly, unit tests, lint, and the architecture guard against app-source commit `613dbc78ae0f467b2f1a97b4df388ac140b82602`. Existing lint warnings remain; errors were fixed without a baseline. [APK and reports](https://github.com/Devasy/FirstLogApp/actions/runs/39770770870/artifacts/12422037722) are available for review.
+
+Connected UI tests, rendered previews, and physical-device behavior are **not verified**. The PR remains a draft for those checks and the documented migrations. This validation update changes documentation only.
 
 ## Recommended order after this foundation
 
-1. Compile and resolve all lint/API compatibility findings; render previews and test real permission/lifecycle paths.
+1. Keep build/unit/lint checks green; render previews and test real permission/lifecycle paths.
 2. Stabilize one transaction owner, cycle calculations, session accounting, and versioned backup round trips with tests.
 3. Rework background monitoring to respect the selected OS APIs and service type limits.
 4. Migrate remaining notification/history/report adapters to their own repository/state contracts.
